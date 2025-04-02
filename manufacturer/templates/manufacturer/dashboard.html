@@ -1,0 +1,145 @@
+<!-- manufacturer/templates/manufacturer/dashboard.html -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Manufacturer Dashboard</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        margin: 0;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+      .dashboard-container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #333;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
+      }
+      .thank-you-message {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+      }
+      .action-links {
+        list-style-type: none;
+        padding-left: 0;
+      }
+      .action-links li {
+        margin-bottom: 15px;
+      }
+      .action-link {
+        color: #007bff;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.3s;
+      }
+      .action-link:hover {
+        color: #0056b3;
+        text-decoration: underline;
+      }
+      .company-info {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 20px;
+      }
+      .logout-btn {
+        display: inline-block;
+        margin-top: 20px;
+        padding: 8px 15px;
+        background: #dc3545;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+      }
+      .logout-btn:hover {
+        background: #c82333;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="dashboard-container">
+      <h1>Welcome, {{ manufacturer.company_name }}</h1>
+
+      <li>
+        <a href="{% url 'manufacturer_profile' %}" class="action-link">
+            View/Edit Profile
+        </a>
+      </li>
+
+      <div class="thank-you-message">
+        <h2>Thank You</h2>
+        <p>Thank you for registering with us. You may now proceed to:</p>
+
+        <ul class="action-links">
+          <li>
+            <a
+              href="{% url 'manufacturer_request_quote' %}"
+              class="action-link"
+            >
+              Post a request for quotation
+            </a>
+          </li>
+          <li>
+            <a
+              href="{% url 'manufacturer_quote_history' %}"
+              class="action-link"
+            >
+              View your quote history
+            </a>
+          </li>
+          <li>
+            <a
+              href="{% url 'manufacturer_list_products' %}"
+              class="action-link"
+            >
+              List your products (you will be asked to upgrade to a paid
+              membership first)
+            </a>
+          </li>
+          <li>
+            <a
+              href="{% url 'manufacturer_complete_profile' %}"
+              class="action-link"
+            >
+              Complete your company profile
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="company-info">
+        <h3>Your Company Information</h3>
+        <p>
+          <strong>Contact:</strong> {{ manufacturer.first_name }} {{ manufacturer.last_name }}
+        </p>
+        <p>
+          <strong>Location:</strong> {{ manufacturer.city }}, {{ manufacturer.state }}
+        </p>
+        <p><strong>Business Type:</strong> {{ manufacturer.business_type }}</p>
+        <p><strong>Key Products:</strong> {{ manufacturer.key_products }}</p>
+        <p><strong>Phone:</strong> {{ manufacturer.phone_number }}</p>
+        {% if manufacturer.website %}
+        <p>
+          <strong>Website:</strong>
+          <a href="{{ manufacturer.website }}" target="_blank"
+            >{{ manufacturer.website }}</a
+          >
+        </p>
+        {% endif %}
+      </div>
+
+      <a href="{% url 'logout' %}" class="logout-btn">Logout</a>
+    </div>
+  </body>
+</html>

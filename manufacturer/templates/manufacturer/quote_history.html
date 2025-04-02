@@ -1,0 +1,186 @@
+<!-- manufacturer/templates/manufacturer/quote_history.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quote History</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .card h3 {
+            margin-top: 0;
+        }
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            color: white;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .status-open { background: #28a745; }
+        .status-closed { background: #6c757d; }
+        .status-awarded { background: #17a2b8; }
+        .status-expired { background: #dc3545; }
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #007bff;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        .view-bids-btn {
+            display: inline-block;
+            padding: 5px 10px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .filters {
+            margin-bottom: 20px;
+        }
+        .feedback-btn {
+            display: inline-block;
+            padding: 5px 10px;
+            background: #ffc107;
+            color: #212529;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-left: 10px;
+        }
+        .feedback-complete {
+            display: inline-block;
+            padding: 5px 10px;
+            background: #28a745;
+            color: white;
+            border-radius: 4px;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Quote History for {{ manufacturer.company_name }}</h1>
+        
+        <div class="filters">
+            <form method="get">
+                <label>Filter by status:</label>
+                <select name="status" onchange="this.form.submit()">
+                    <option value="">All</option>
+                    <option value="open" {% if request.GET.status == 'open' %}selected{% endif %}>Open</option>
+                    <option value="closed" {% if request.GET.status == 'closed' %}selected{% endif %}>Closed</option>
+                    <option value="awarded" {% if request.GET.status == 'awarded' %}selected{% endif %}>Awarded</option>
+                    <option value="expired" {% if request.GET.status == 'expired' %}selected{% endif %}>Expired</option>
+                </select>
+            </form>
+        </div>
+        
+        {% for quote in quotes %}
+        <div class="card">
+            <h3>{{ quote.product }}</h3>
+            <p><strong>Category:</strong> {{ quote.get_category_display }}</p>
+            <p><strong>Description:</strong> {{ quote.description }}</p>
+            <p><strong>Deadline:</strong> {{ quote.deadline }}</p>
+            <p><strong>Quantity:</strong> {{ quote.quantity }} {{ quote.unit }}</p>
+            <p><strong>Shipping Terms:</strong> {{ quote.shipping_terms }}</p>
+            <p><strong>Payment Terms:</strong> {{ quote.payment_terms }}</p>
+            <span class="status status-{{ quote.status }}">{{ quote.get_status_display }}</span>
+    
+            <div class="price-section" style="margin-top: 10px;">
+                <a href="#" class="toggle-price-btn" 
+                   data-commodity="{{ quote.product }}"
+                   style="color: #007bff; cursor: pointer;">
+                   Show Live Price
+                </a>
+                <div class="price-display" style="display: none; margin-top: 5px; padding: 5px; background: #f8f9fa;"></div>
+            </div>
+
+            {% if quote.status == 'awarded' and quote.accepted_bid %}
+                <p>
+                    <strong>Supplier:</strong> {{ quote.accepted_bid.supplier.company_name }}
+                    {% if not quote.accepted_bid.feedback_given %}
+                        <a href="{% url 'submit_review' quote.accepted_bid.id %}" class="feedback-btn">Submit Feedback</a>
+                    {% else %}
+                        <span class="feedback-complete">Feedback Submitted</span>
+                    {% endif %}
+                </p>
+            {% endif %}
+
+            {% if quote.status == 'open' or quote.status == 'awarded' %}
+            <div>
+                <a href="{% url 'view_quote_bids' quote.id %}" class="view-bids-btn">View Bids</a>
+            </div>
+            {% endif %}
+        </div>
+        {% empty %}
+        <p>You have not submitted any quote requests yet.</p>
+        {% endfor %}
+        
+        <a href="{% url 'manufacturer_dashboard' %}" class="back-link">← Back to Dashboard</a>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.toggle-price-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const displayDiv = this.nextElementSibling;
+                    const commodity = this.dataset.commodity;
+                    
+                    if (displayDiv.style.display === 'none') {
+                        displayDiv.textContent = 'Loading price...';
+                        displayDiv.style.display = 'block';
+                        this.textContent = 'Hide Price';
+                        
+                        fetch(`/manufacturer/commodity-price/?commodity=${encodeURIComponent(commodity)}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.price) {
+                                    displayDiv.textContent = `Current Price: ${data.price}`;
+                                } else if (data.error) {
+                                    displayDiv.textContent = `Error: ${data.error}`;
+                                } else {
+                                    displayDiv.textContent = 'Price not available';
+                                }
+                            })
+                            .catch(() => {
+                                displayDiv.textContent = 'Failed to fetch price';
+                            });
+                    } else {
+                        displayDiv.style.display = 'none';
+                        this.textContent = 'Show Live Price';
+                    }
+                });
+            });
+        });
+        </script>
+
+</body>
+</html>

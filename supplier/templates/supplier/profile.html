@@ -1,0 +1,94 @@
+<!-- Update the profile.html template -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Supplier Profile</title>
+    <style>
+        /* ... existing styles ... */
+        .reviews-section { margin-top: 30px; }
+        .review-card { 
+            border: 1px solid #ddd; 
+            padding: 15px; 
+            margin-bottom: 15px; 
+            border-radius: 5px;
+        }
+        .rating { color: #ffc107; font-weight: bold; }
+        .average-rating {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+        }
+        .stars {
+            color: #ffc107;
+            font-size: 1.5em;
+        }
+    </style>
+</head>
+<body>
+    <div class="profile-container">
+        <div class="profile-header">
+            <h1>{{ supplier.company_name }}</h1>
+            <p>{{ supplier.first_name }} {{ supplier.last_name }}</p>
+            <a href="{% url 'supplier_edit_profile' %}" class="edit-btn">Edit Profile</a>
+            <a href="{% url 'supplier_dashboard' %}" class="edit-btn">Back to Dashboard</a>
+        </div>
+        
+        <div class="profile-info">
+            <h2>Company Information</h2>
+            <p><strong>Location:</strong> {{ supplier.city }}, {{ supplier.state }}</p>
+            <p><strong>Business Type:</strong> {{ supplier.business_type }}</p>
+            <p><strong>Phone:</strong> {{ supplier.phone_number }}</p>
+            {% if supplier.website %}
+                <p><strong>Website:</strong> <a href="{{ supplier.website }}" target="_blank">{{ supplier.website }}</a></p>
+            {% endif %}
+        </div>
+        
+        <div class="profile-info">
+            <h2>Key Services</h2>
+            <p>{{ supplier.key_services }}</p>
+        </div>
+        
+        <div class="reviews-section">
+            <h2>Customer Reviews</h2>
+            
+            {% if average_rating %}
+                <div class="average-rating">
+                    Average Rating: 
+                    <span class="stars">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= average_rating|floatformat:0 %}
+                                ★
+                            {% else %}
+                                ☆
+                            {% endif %}
+                        {% endfor %}
+                    </span>
+                    ({{ average_rating|floatformat:1 }} from {{ review_count }} reviews)
+                </div>
+            {% else %}
+                <p>No reviews yet</p>
+            {% endif %}
+            
+            {% for review in reviews %}
+                <div class="review-card">
+                    <h3>{{ review.manufacturer.company_name }}</h3>
+                    <p class="rating">
+                        Rating: 
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= review.rating %}
+                                ★
+                            {% else %}
+                                ☆
+                            {% endif %}
+                        {% endfor %}
+                        ({{ review.get_rating_display }})
+                    </p>
+                    <p>{{ review.created_at|date:"F j, Y" }}</p>
+                    {% if review.comment %}
+                        <p>{{ review.comment }}</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

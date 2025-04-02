@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Supplier Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .quote-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            position: relative;
+        }
+        .quote-card h3 {
+            margin-top: 0;
+            color: #007bff;
+        }
+        .bid-btn {
+            background: #28a745;
+            color: white;
+            padding: 8px 15px;
+            text-decoration: none;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        .bid-status {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 0.8em;
+        }
+        .status-submitted { background: #ffc107; color: #000; }
+        .status-accepted { background: #28a745; color: #fff; }
+        .status-rejected { background: #dc3545; color: #fff; }
+        .bid-card {
+            background: #f8f9fa;
+            border: 1px solid #eee;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+        }
+        .filters {
+            margin-bottom: 20px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .category-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            background: #6c757d;
+            color: white;
+            border-radius: 3px;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+        .status-active { background: #28a745; color: white; }
+        .status-accepted { background: #17a2b8; color: white; }
+        .status-rejected { background: #6c757d; color: white; }
+        .expired-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            background: #dc3545;
+            color: white;
+            border-radius: 3px;
+            font-size: 0.8em;
+            margin-left: 5px;
+        }
+        .view-all {
+            display: inline-block;
+            margin-top: 10px;
+            color: #007bff;
+            text-decoration: none;
+        }
+        .view-all:hover {
+            text-decoration: underline;
+        }
+            .bid-card h4 {
+                margin-top: 0;
+                color: #333;
+            }
+            .filters form {
+                display: flex;
+                align-items: center;
+            }
+            .filters label {
+                margin-right: 10px;
+            }
+            .filters select {
+                padding: 5px;
+                border-radius: 4px;
+                border: 1px solid #ccc;
+            }
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome, {{ supplier.company_name }}</h1>
+        
+        <a href="{% url 'supplier_profile' %}" class="bid-btn">View/Edit Profile</a>
+
+        <div class="filters">
+            <form method="get">
+                <label>Filter by category:</label>
+                <select name="category" onchange="this.form.submit()">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                        <option value="{{ category }}" {% if current_category == category %}selected{% endif %}>
+                            {{ category|title }}
+                        </option>
+                    {% endfor %}
+                </select>
+                {% if current_category %}
+                    <a href="{% url 'supplier_dashboard' %}" style="margin-left: 10px;">Clear filter</a>
+                {% endif %}
+            </form>
+        </div>
+
+        <div class="section">
+            <h2>Open Quotations</h2>
+            {% for quote in open_quotes %}
+            <div class="quote-card">
+                <h3>
+                    <a href="{% url 'view_manufacturer_profile' quote.manufacturer.id %}?quote_id={{ quote.id }}">
+                        {{ quote.manufacturer.company_name }}
+                    </a> - {{ quote.product }}
+                    <span class="category-badge">{{ quote.get_category_display }}</span>
+                </h3>
+                <p><strong>Quantity:</strong> {{ quote.quantity }} {{ quote.unit }}</p>
+                <p><strong>Deadline:</strong> {{ quote.deadline|date:"M d, Y" }}</p>
+                <p><strong>Description:</strong> {{ quote.description|truncatechars:100 }}</p>
+                <a href="{% url 'submit_bid' quote.id %}" class="bid-btn">Place Bid</a>
+                
+                <!-- Show bids for this quote if they exist -->
+                {% for bid in your_bids %}
+                    {% if bid.quote.id == quote.id %}
+                    <div class="bid-card">
+                        <h4>Your Bid</h4>
+                        <p><strong>Price:</strong> {{ quote.currency }} {{ bid.bid_amount }}</p>
+                        <p><strong>Delivery Time:</strong> {{ bid.delivery_time }} days</p>
+                        <p><strong>Status:</strong> 
+                            <span class="bid-status status-{{ bid.status }}">{{ bid.get_status_display }}</span>
+                        </p>
+                        {% if bid.comments %}
+                        <p><strong>Comments:</strong> {{ bid.comments }}</p>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            {% empty %}
+            <p>No open quotations available at this time.</p>
+            {% endfor %}
+            
+            <h2>Your Active Negotiations</h2>
+            {% if negotiations %}
+                <ul>
+                    {% for negotiation in negotiations %}
+                        <li>
+                            <a href="{% url 'supplier_view_negotiation' negotiation.id %}">
+                                {{ negotiation.bid.quote.product }} - {{ negotiation.bid.quote.manufacturer.company_name }}
+                            </a>
+                            <span class="status-badge">{{ negotiation.get_status_display }}</span>
+                            {% if negotiation.expiry_date < now and negotiation.status == 'active' %}
+                                <span class="expired-badge">Expired</span>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>You have no active negotiations.</p>
+            {% endif %}
+            <a href="{% url 'supplier_negotiations' %}" class="view-all">View All Negotiations</a>
+            
+            <h2>Your Reviews</h2>
+            {% if average_rating %}
+                <p>Average Rating: 
+                    <span class="stars">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= average_rating|floatformat:0 %}
+                                ★
+                            {% else %}
+                                ☆
+                            {% endif %}
+                        {% endfor %}
+                    </span>
+                    ({{ average_rating|floatformat:1 }} from {{ review_count }} reviews)
+                </p>
+            {% else %}
+                <p>No reviews yet</p>
+            {% endif %}
+            <a href="{% url 'supplier_profile' %}" class="view-all">View All Reviews</a>
+        </div>
+        
+        <a href="{% url 'logout' %}">Logout</a>
+
+    </div>
+</body>
+</html>
