@@ -140,3 +140,7 @@ DEFAULT_FROM_EMAIL = 'insightai.hackathonclub@gmail.com'
 # Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+
+OPENROUTE_API_KEY = "5b3ce3597851110001cf62489fb869a41b884c29a4f0adb4581c6209"
