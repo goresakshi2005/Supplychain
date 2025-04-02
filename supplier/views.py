@@ -15,7 +15,6 @@ from django.utils import timezone
 
 
 
-# Update supplier_register function
 def supplier_register(request):
     if request.method == 'POST':
         form = SupplierRegistrationForm(request.POST)
@@ -50,9 +49,23 @@ def supplier_register(request):
                     'user': user
                 }
             )
+            
+            # Log the user in after registration
+            authenticated_user = authenticate(
+                username=form.cleaned_data['username'],
+                password=form.cleaned_data['password1']
+            )
+            if authenticated_user is not None:
+                login(request, authenticated_user)
+            
+            messages.success(request, 'Supplier registered successfully!')
+            return redirect('supplier_dashboard')  # Redirect to dashboard after successful registration
     else:
         form = SupplierRegistrationForm()
     return render(request, 'supplier/register.html', {'form': form})
+
+
+
 
 def supplier_login(request):
     if request.method == 'POST':

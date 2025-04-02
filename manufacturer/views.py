@@ -11,6 +11,9 @@ from utils.email import send_email
 
 from django.db.models import Avg  # Add this import
 
+from django.contrib import messages
+from django.shortcuts import render, redirect
+
 def manufacturer_register(request):
     if request.method == 'POST':
         form = ManufacturerRegistrationForm(request.POST)
@@ -44,9 +47,23 @@ def manufacturer_register(request):
                     'user': user
                 }
             )
+            
+            # Log the user in after registration
+            authenticated_user = authenticate(
+                username=form.cleaned_data['username'],
+                password=form.cleaned_data['password1']
+            )
+            if authenticated_user is not None:
+                login(request, authenticated_user)
+            
+            # Add success message and redirect
+            messages.success(request, 'Manufacturer registered successfully!')
+            return redirect('manufacturer_dashboard')
+            
     else:
         form = ManufacturerRegistrationForm()
     return render(request, 'manufacturer/register.html', {'form': form})
+
 
 def manufacturer_login(request):
     if request.method == 'POST':
