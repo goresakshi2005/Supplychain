@@ -115,9 +115,11 @@
         
         <form method="post" id="bid-form">
             {% csrf_token %}
+            
             <div class="form-group">
                 <label for="id_bid_amount">Your Price ({{ quote.currency }})</label>
                 {{ form.bid_amount }}
+                {{ form.bid_amount.errors }}
             </div>
             
             <div class="form-group">
@@ -132,6 +134,12 @@
             <div class="form-group">
                 <label for="lead_time">Lead Time (days for production/processing)</label>
                 <input type="number" id="lead_time" name="lead_time" min="0" step="1" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="id_delivery_time">Delivery Time (days)</label>
+                {{ form.delivery_time }}
+                {{ form.delivery_time.errors }}
             </div>
             
             <div class="route-options">
@@ -153,6 +161,7 @@
             <div class="form-group">
                 <label for="id_comments">Comments (Optional)</label>
                 {{ form.comments }}
+                {{ form.comments.errors }}
             </div>
             
             <button type="button" id="calculate-btn">Calculate Delivery Time</button>
@@ -170,6 +179,7 @@
             const routeResults = document.getElementById('route-results');
             const routeLoading = document.getElementById('route-loading');
             const deliveryTimeResult = document.getElementById('delivery-time-result');
+            const deliveryTimeInput = document.getElementById('id_delivery_time');
             
             // Function to calculate route and delivery time
             calculateBtn.addEventListener('click', function() {
@@ -204,6 +214,7 @@
                         
                         const totalDays = parseFloat(leadTime.value) + 0.6;
                         deliveryTimeResult.innerHTML = `Total Delivery Time: ${totalDays.toFixed(1)} days (${leadTime.value} days production + 0.6 days transit)`;
+                        deliveryTimeInput.value = Math.ceil(totalDays);
                         
                     } else if (transportMode.value === 'air') {
                         // Simulate air route response
@@ -218,90 +229,88 @@
                         
                         const totalDays = parseFloat(leadTime.value) + 1.1;
                         deliveryTimeResult.innerHTML = `Total Delivery Time: ${totalDays.toFixed(1)} days (${leadTime.value} days production + 1.1 days transit)`;
+                        deliveryTimeInput.value = Math.ceil(totalDays);
                     }
-                    
-                    // Update the delivery time field in the form
-                    document.querySelector('[name="delivery_time"]').value = Math.ceil(totalDays);
                 }, 1000);
             });
             
             function calculateRealRoute() {
-    fetch('{% url "calculate_route" %}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token }}'
-        },
-        body: JSON.stringify({
-            transport_mode: transportMode.value,
-            supplier_city: "{{ supplier.city }}",
-            supplier_state: "{{ supplier.state }}",
-            manufacturer_city: "{{ quote.manufacturer.city }}",
-            manufacturer_state: "{{ quote.manufacturer.state }}",
-            lead_time: leadTime.value
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        routeLoading.style.display = 'none';
-        
-        if (!data.success) {
-            routeResults.innerHTML = `<p class="error">${data.error}</p>`;
-            return;
-        }
-        
-        if (data.mode === 'road') {
-            // Detailed display for road transport
-            routeResults.innerHTML = `
-                <div class="route-option">
-                    <h4>🚗 Detailed Road Route</h4>
-                    <p><strong>Distance:</strong> ${data.distance} km</p>
-                    <p><strong>Estimated Transit Time:</strong> ${data.transit_time}</p>
-                    <p><strong>Route Summary:</strong> ${data.route_summary}</p>
+                fetch('{% url "calculate_route" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        transport_mode: transportMode.value,
+                        supplier_city: "{{ supplier.city }}",
+                        supplier_state: "{{ supplier.state }}",
+                        manufacturer_city: "{{ quote.manufacturer.city }}",
+                        manufacturer_state: "{{ quote.manufacturer.state }}",
+                        lead_time: leadTime.value
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    routeLoading.style.display = 'none';
                     
-                    <div class="route-details">
-                        <h5>Step-by-Step Directions:</h5>
-                        <div class="directions-container">
-                            ${data.detailed_directions.split('\n').map(step => 
-                                `<div class="direction-step">${step}</div>`
-                            ).join('')}
-                        </div>
-                    </div>
+                    if (!data.success) {
+                        routeResults.innerHTML = `<p class="error">${data.error}</p>`;
+                        return;
+                    }
                     
-                    <p class="route-stats">
-                        <strong>Route Statistics:</strong> 
-                        ${data.total_steps} steps, 
-                        ${data.highway_percentage}% highway
-                    </p>
-                </div>
-            `;
-        } else {
-            // Simple display for air transport
-            routeResults.innerHTML = `
-                <div class="route-option">
-                    <h4>✈️ Air Transport</h4>
-                    <p><strong>Distance:</strong> ${data.distance} km</p>
-                    <p><strong>Transit Time:</strong> ${data.transit_time}</p>
-                    <p><strong>Route:</strong> ${data.route_description}</p>
-                </div>
-            `;
-        }
-        
-        // Display total delivery time
-        const transit_days = (data.total_days - parseFloat(leadTime.value)).toFixed(1);
-        deliveryTimeResult.innerHTML = `
-            <strong>Total Delivery Time:</strong> ${data.total_days} days<br>
-            (${leadTime.value} days production + ${transit_days} days transit)
-        `;
-        
-        // Update the delivery time field in the form
-        document.querySelector('[name="delivery_time"]').value = data.delivery_days;
-    })
-    .catch(error => {
-        routeLoading.style.display = 'none';
-        routeResults.innerHTML = `<p class="error">Error calculating route: ${error.message}</p>`;
-    });
-}
+                    if (data.mode === 'road') {
+                        // Detailed display for road transport
+                        routeResults.innerHTML = `
+                            <div class="route-option">
+                                <h4>🚗 Detailed Road Route</h4>
+                                <p><strong>Distance:</strong> ${data.distance} km</p>
+                                <p><strong>Estimated Transit Time:</strong> ${data.transit_time}</p>
+                                <p><strong>Route Summary:</strong> ${data.route_summary}</p>
+                                
+                                <div class="route-details">
+                                    <h5>Step-by-Step Directions:</h5>
+                                    <div class="directions-container">
+                                        ${data.detailed_directions.split('\n').map(step => 
+                                            `<div class="direction-step">${step}</div>`
+                                        ).join('')}
+                                    </div>
+                                </div>
+                                
+                                <p class="route-stats">
+                                    <strong>Route Statistics:</strong> 
+                                    ${data.total_steps} steps, 
+                                    ${data.highway_percentage}% highway
+                                </p>
+                            </div>
+                        `;
+                    } else {
+                        // Simple display for air transport
+                        routeResults.innerHTML = `
+                            <div class="route-option">
+                                <h4>✈️ Air Transport</h4>
+                                <p><strong>Distance:</strong> ${data.distance} km</p>
+                                <p><strong>Transit Time:</strong> ${data.transit_time}</p>
+                                <p><strong>Route:</strong> ${data.route_description}</p>
+                            </div>
+                        `;
+                    }
+                    
+                    // Display total delivery time
+                    const transit_days = (data.total_days - parseFloat(leadTime.value)).toFixed(1);
+                    deliveryTimeResult.innerHTML = `
+                        <strong>Total Delivery Time:</strong> ${data.total_days} days<br>
+                        (${leadTime.value} days production + ${transit_days} days transit)
+                    `;
+                    
+                    // Update the delivery time field in the form
+                    deliveryTimeInput.value = data.delivery_days;
+                })
+                .catch(error => {
+                    routeLoading.style.display = 'none';
+                    routeResults.innerHTML = `<p class="error">Error calculating route: ${error.message}</p>`;
+                });
+            }
         });
     </script>
 </body>

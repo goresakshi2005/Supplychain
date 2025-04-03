@@ -29,11 +29,28 @@ class SupplierLoginForm(forms.Form):
     password = forms.CharField(widget=forms.PasswordInput)
 
 
-class BidForm(forms.Form):
-    bid_amount = forms.DecimalField(label="Your Price", min_value=0)
-    delivery_time = forms.IntegerField(label="Delivery Time (days)", min_value=1)
-    comments = forms.CharField(widget=forms.Textarea, required=False)
+# class BidForm(forms.Form):
+#     bid_amount = forms.DecimalField(label="Your Price", min_value=0)
+#     delivery_time = forms.IntegerField(label="Delivery Time (days)", min_value=1)
+#     comments = forms.CharField(widget=forms.Textarea, required=False)
 
+# supplier/forms.py
+from django import forms
+from .models import Bid
+
+class BidForm(forms.ModelForm):
+    class Meta:
+        model = Bid
+        fields = ['bid_amount', 'delivery_time', 'comments']
+        widgets = {
+            'comments': forms.Textarea(attrs={'rows': 4}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['bid_amount'].label = "Your Price"
+        self.fields['delivery_time'].label = "Delivery Time (days)"
+        self.fields['comments'].required = False
 
 # Add to supplier/forms.py
 from django import forms
