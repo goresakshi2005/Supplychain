@@ -1,3 +1,61 @@
 2025-04-02 12:22:51,469 - DEBUG - Converted retries value: 2 -> Retry(total=2, connect=None, read=None, redirect=None, status=None)
 2025-04-02 12:22:51,470 - DEBUG - Converted retries value: 2 -> Retry(total=2, connect=None, read=None, redirect=None, status=None)
 2025-04-02 12:22:51,470 - INFO - Geocoder initialized successfully
+2025-04-04 12:02:46,212 - DEBUG - Converted retries value: 2 -> Retry(total=2, connect=None, read=None, redirect=None, status=None)
+2025-04-04 12:02:46,213 - DEBUG - Converted retries value: 2 -> Retry(total=2, connect=None, read=None, redirect=None, status=None)
+2025-04-04 12:02:46,213 - INFO - Geocoder initialized successfully
+2025-04-04 12:02:46,225 - DEBUG - Nominatim.geocode: https://nominatim.openstreetmap.org/search?q=chennai%2C+Maharashtra&format=json&limit=1
+2025-04-04 12:02:46,226 - DEBUG - Starting new HTTPS connection (1): nominatim.openstreetmap.org:443
+2025-04-04 12:02:46,700 - DEBUG - https://nominatim.openstreetmap.org:443 "GET /search?q=chennai%2C+Maharashtra&format=json&limit=1 HTTP/1.1" 200 529
+2025-04-04 12:02:46,701 - DEBUG - RateLimiter sleep(0.5234146000002511)
+2025-04-04 12:02:47,226 - DEBUG - Nominatim.geocode: https://nominatim.openstreetmap.org/search?q=Mumbai%2C+Maharashtra&format=json&limit=1
+2025-04-04 12:02:48,027 - DEBUG - https://nominatim.openstreetmap.org:443 "GET /search?q=Mumbai%2C+Maharashtra&format=json&limit=1 HTTP/1.1" 200 441
+2025-04-04 12:02:48,029 - DEBUG - Starting new HTTPS connection (1): api.openrouteservice.org:443
+2025-04-04 12:02:48,708 - DEBUG - https://api.openrouteservice.org:443 "POST /v2/directions/driving-car HTTP/1.1" 200 None
+2025-04-04 12:05:57,605 - WARNING - Not Found: /supplier
+2025-04-04 12:08:05,024 - DEBUG - Converted retries value: 2 -> Retry(total=2, connect=None, read=None, redirect=None, status=None)
+2025-04-04 12:08:05,024 - DEBUG - Converted retries value: 2 -> Retry(total=2, connect=None, read=None, redirect=None, status=None)
+2025-04-04 12:08:05,025 - INFO - Geocoder initialized successfully
+2025-04-04 12:08:05,025 - DEBUG - Nominatim.geocode: https://nominatim.openstreetmap.org/search?q=chennai%2C+Tamil+Nadu&format=json&limit=1
+2025-04-04 12:08:05,026 - DEBUG - Starting new HTTPS connection (1): nominatim.openstreetmap.org:443
+2025-04-04 12:08:06,055 - DEBUG - https://nominatim.openstreetmap.org:443 "GET /search?q=chennai%2C+Tamil+Nadu&format=json&limit=1 HTTP/1.1" 200 418
+2025-04-04 12:08:06,056 - DEBUG - Nominatim.geocode: https://nominatim.openstreetmap.org/search?q=Mumbai%2C+Maharashtra&format=json&limit=1
+2025-04-04 12:08:07,805 - DEBUG - https://nominatim.openstreetmap.org:443 "GET /search?q=Mumbai%2C+Maharashtra&format=json&limit=1 HTTP/1.1" 200 441
+2025-04-04 12:08:07,808 - DEBUG - Starting new HTTPS connection (1): api.openrouteservice.org:443
+2025-04-04 12:08:08,510 - DEBUG - https://api.openrouteservice.org:443 "POST /v2/directions/driving-car HTTP/1.1" 200 None
+2025-04-04 12:08:37,990 - DEBUG - Converted retries value: 2 -> Retry(total=2, connect=None, read=None, redirect=None, status=None)
+2025-04-04 12:08:37,991 - DEBUG - Converted retries value: 2 -> Retry(total=2, connect=None, read=None, redirect=None, status=None)
+2025-04-04 12:08:37,991 - INFO - Geocoder initialized successfully
+2025-04-04 12:08:37,991 - DEBUG - Nominatim.geocode: https://nominatim.openstreetmap.org/search?q=chennai%2C+Tamil+Nadu&format=json&limit=1
+2025-04-04 12:08:37,992 - DEBUG - Starting new HTTPS connection (1): nominatim.openstreetmap.org:443
+2025-04-04 12:08:38,564 - DEBUG - https://nominatim.openstreetmap.org:443 "GET /search?q=chennai%2C+Tamil+Nadu&format=json&limit=1 HTTP/1.1" 200 418
+2025-04-04 12:08:38,564 - DEBUG - RateLimiter sleep(0.4271254999912344)
+2025-04-04 12:08:38,992 - DEBUG - Nominatim.geocode: https://nominatim.openstreetmap.org/search?q=Mumbai%2C+Maharashtra&format=json&limit=1
+2025-04-04 12:08:39,775 - DEBUG - https://nominatim.openstreetmap.org:443 "GET /search?q=Mumbai%2C+Maharashtra&format=json&limit=1 HTTP/1.1" 200 441
+2025-04-04 12:30:40,779 - INFO - C:\Users\Lenovo\Desktop\supplychain management\backendproject\Supplychain\manufacturer\views.py changed, reloading.
+2025-04-04 12:31:26,751 - INFO - C:\Users\Lenovo\Desktop\supplychain management\backendproject\Supplychain\manufacturer\views.py changed, reloading.
+2025-04-04 12:31:49,902 - INFO - C:\Users\Lenovo\Desktop\supplychain management\backendproject\Supplychain\manufacturer\urls.py changed, reloading.
+2025-04-04 12:37:02,297 - INFO - C:\Users\Lenovo\Desktop\supplychain management\backendproject\Supplychain\manufacturer\views.py changed, reloading.
+2025-04-04 12:37:20,725 - INFO - C:\Users\Lenovo\Desktop\supplychain management\backendproject\Supplychain\manufacturer\urls.py changed, reloading.
+2025-04-04 12:45:45,547 - INFO - C:\Users\Lenovo\Desktop\supplychain management\backendproject\Supplychain\manufacturer\views.py changed, reloading.
+2025-04-04 12:46:08,757 - INFO - C:\Users\Lenovo\Desktop\supplychain management\backendproject\Supplychain\manufacturer\views.py changed, reloading.
+2025-04-04 12:55:34,946 - INFO - C:\Users\Lenovo\Desktop\supplychain management\backendproject\Supplychain\manufacturer\views.py changed, reloading.
+2025-04-04 12:57:07,758 - INFO - C:\Users\Lenovo\Desktop\supplychain management\backendproject\Supplychain\manufacturer\views.py changed, reloading.
+2025-04-04 12:57:18,343 - INFO - C:\Users\Lenovo\Desktop\supplychain management\backendproject\Supplychain\manufacturer\views.py changed, reloading.
+2025-04-04 12:59:31,800 - INFO - C:\Users\Lenovo\Desktop\supplychain management\backendproject\Supplychain\manufacturer\urls.py changed, reloading.
+2025-04-04 12:59:42,798 - INFO - C:\Users\Lenovo\Desktop\supplychain management\backendproject\Supplychain\manufacturer\urls.py changed, reloading.
+2025-04-04 13:23:56,554 - DEBUG - Converted retries value: 2 -> Retry(total=2, connect=None, read=None, redirect=None, status=None)
+2025-04-04 13:23:56,555 - DEBUG - Converted retries value: 2 -> Retry(total=2, connect=None, read=None, redirect=None, status=None)
+2025-04-04 13:23:56,557 - WARNING - Bad Request: /manufacturer/calculate-carbon-footprint/
+2025-04-04 13:45:04,654 - INFO - C:\Users\Lenovo\Desktop\supplychain management\backendproject\Supplychain\manufacturer\views.py changed, reloading.
+2025-04-04 13:48:25,197 - DEBUG - Converted retries value: 2 -> Retry(total=2, connect=None, read=None, redirect=None, status=None)
+2025-04-04 13:48:25,198 - DEBUG - Converted retries value: 2 -> Retry(total=2, connect=None, read=None, redirect=None, status=None)
+2025-04-04 13:48:25,198 - INFO - Geocoder initialized successfully
+2025-04-04 13:48:25,198 - DEBUG - Nominatim.geocode: https://nominatim.openstreetmap.org/search?q=chennai%2C+Tamil+Nadu&format=json&limit=1
+2025-04-04 13:48:25,199 - DEBUG - Starting new HTTPS connection (1): nominatim.openstreetmap.org:443
+2025-04-04 13:48:26,020 - DEBUG - https://nominatim.openstreetmap.org:443 "GET /search?q=chennai%2C+Tamil+Nadu&format=json&limit=1 HTTP/1.1" 200 418
+2025-04-04 13:48:26,021 - DEBUG - RateLimiter sleep(0.17771499999798834)
+2025-04-04 13:48:26,199 - DEBUG - Nominatim.geocode: https://nominatim.openstreetmap.org/search?q=Mumbai%2C+Maharashtra&format=json&limit=1
+2025-04-04 13:48:27,073 - DEBUG - https://nominatim.openstreetmap.org:443 "GET /search?q=Mumbai%2C+Maharashtra&format=json&limit=1 HTTP/1.1" 200 441
+2025-04-04 13:48:27,075 - DEBUG - Starting new HTTPS connection (1): api.openrouteservice.org:443
+2025-04-04 13:48:28,117 - DEBUG - https://api.openrouteservice.org:443 "POST /v2/directions/driving-car HTTP/1.1" 200 None

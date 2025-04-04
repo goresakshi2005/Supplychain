@@ -1,6 +1,7 @@
 # manufacturer/urls.py
 from django.urls import path
 from . import views
+from .views import calculate_carbon_footprint
 
 urlpatterns = [
     # Authentication URLs
@@ -21,4 +22,5 @@ urlpatterns = [
     path('supplier-profile/<int:supplier_id>/', views.view_supplier_profile, name='view_supplier_profile'),
     path('commodity-price/', views.get_commodity_price, name='commodity_price'),
     path('analyze-supplier/<int:supplier_id>/', views.analyze_supplier, name='analyze_supplier'),
+    path('calculate-carbon-footprint/', calculate_carbon_footprint, name='calculate_carbon_footprint'),
 ]

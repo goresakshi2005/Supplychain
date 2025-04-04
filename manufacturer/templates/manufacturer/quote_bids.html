@@ -79,7 +79,7 @@
             border-radius: 4px;
             font-size: 0.9em;
         }
-        /* New modal styles */
+        /* Modal styles */
         .modal {
             display: none;
             position: fixed;
@@ -138,6 +138,40 @@
             border-radius: 4px;
             margin-top: 10px;
         }
+        /* Carbon footprint styles */
+        .carbon-btn {
+            background: #20c997;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-top: 10px;
+        }
+        .carbon-btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+        .carbon-results {
+            margin-top: 10px;
+            padding: 10px;
+            background: #e8f8f5;
+            border-radius: 4px;
+            display: none;
+        }
+        .carbon-metric {
+            margin: 5px 0;
+        }
+        .carbon-metric strong {
+            display: inline-block;
+            width: 150px;
+        }
+        .transport-warning {
+            color: #dc3545;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -170,9 +204,16 @@
                 <p><strong>Delivery Time:</strong> {{ bid.delivery_time }} days</p>
                 
                 <div class="transport-details">
-                    <p><strong>Transportation:</strong></p>
-                    <p>{{ bid.vehicle_count }} x {{ bid.get_vehicle_type_display }} ({{ bid.get_fuel_type_display }})</p>
-                    <p>Capacity: {{ bid.vehicle_capacity }} kg per vehicle</p>
+                    <p><strong>Transport Mode:</strong> {{ bid.get_transport_mode_display }}</p>
+                    {% if bid.transport_mode == 'road' %}
+                        <p><strong>Vehicle Type:</strong> {{ bid.get_vehicle_type_display|default:"Not specified" }}</p>
+                        <p><strong>Vehicle Count:</strong> {{ bid.vehicle_count|default:"Not specified" }}</p>
+                        <p><strong>Load Percentage:</strong> {{ bid.load_percentage|default:"Not specified" }}%</p>
+                        <p><strong>Empty Return:</strong> {{ bid.empty_return|yesno:"Yes,No" }}</p>
+                    {% else %}
+                        <p><strong>Aircraft Type:</strong> {{ bid.get_aircraft_type_display|default:"Not specified" }}</p>
+                        <p><strong>Flight Count:</strong> {{ bid.flight_count|default:"Not specified" }}</p>
+                    {% endif %}
                 </div>
                 
                 <p><strong>Status:</strong> <span class="status status-{{ bid.status }}">{{ bid.get_status_display }}</span></p>
@@ -183,6 +224,20 @@
                 <div class="action-buttons">
                     <button class="analyze-btn" data-supplier-id="{{ bid.supplier.id }}">Analyze Supplier</button>
                     
+                    {% if bid.transport_mode == 'road' %}
+                    <button class="carbon-btn" 
+                            data-bid-id="{{ bid.id }}"
+                            data-start-addr="{{ bid.supplier.city }}, {{ bid.supplier.state }}"
+                            data-end-addr="{{ quote.manufacturer.city }}, {{ quote.manufacturer.state }}"
+                            data-vehicle-type="{{ bid.vehicle_type|default:'' }}"
+                            data-vehicle-count="{{ bid.vehicle_count|default:0 }}"
+                            data-load-percentage="{{ bid.load_percentage|default:100 }}"
+                            data-empty-return="{{ bid.empty_return|yesno:'true,false'|default:'false' }}"
+                            {% if not bid.vehicle_type or not bid.vehicle_count or not bid.load_percentage %}disabled title="Cannot calculate - transport details missing"{% endif %}>
+                        Carbon Footprint
+                    </button>
+                    {% endif %}
+                    
                     {% if bid.status == 'submitted' and quote.status == 'open' %}
                     <form method="post" action="{% url 'direct_accept_bid' bid.id %}" style="display: inline;">
                         {% csrf_token %}
@@ -191,6 +246,15 @@
                     <a href="{% url 'start_negotiation' bid.id %}" class="negotiate-btn">Negotiate</a>
                     {% endif %}
                 </div>
+                
+                {% if bid.transport_mode == 'road' %}
+                <div class="carbon-results" id="carbonResults-{{ bid.id }}">
+                    <div class="carbon-metric"><strong>Distance:</strong> <span class="distance">Click button to calculate</span></div>
+                    <div class="carbon-metric"><strong>Total Emissions:</strong> <span class="total-emissions">-</span></div>
+                    <div class="carbon-metric"><strong>Per Vehicle:</strong> <span class="per-vehicle">-</span></div>
+                    <div class="carbon-metric"><strong>Trees to Offset:</strong> <span class="trees">-</span></div>
+                </div>
+                {% endif %}
             
                 {% if bid.status == 'accepted' and not bid.feedback_given %}
                     <a href="{% url 'submit_review' bid.id %}" class="feedback-btn">Submit Feedback</a>
@@ -261,6 +325,90 @@
                 if (event.target === modal) {
                     modal.style.display = 'none';
                 }
+            });
+
+            // Carbon footprint calculation
+            document.querySelectorAll('.carbon-btn:not(:disabled)').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const resultsDiv = document.getElementById(`carbonResults-${this.dataset.bidId}`);
+                    
+                    // Toggle display
+                    if (resultsDiv.style.display === 'block') {
+                        resultsDiv.style.display = 'none';
+                        return;
+                    }
+                    
+                    resultsDiv.style.display = 'block';
+                    
+                    // Skip calculation if already done
+                    if (resultsDiv.querySelector('.distance').textContent.includes('km')) {
+                        return;
+                    }
+                    
+                    // Show loading state
+                    resultsDiv.querySelectorAll('span').forEach(span => {
+                        if (span.classList.contains('distance')) {
+                            span.textContent = 'Calculating...';
+                        } else {
+                            span.textContent = '-';
+                        }
+                    });
+                    
+                    // Prepare data
+                    const data = {
+                        start_addr: this.dataset.startAddr,
+                        end_addr: this.dataset.endAddr,
+                        vehicle_type: this.dataset.vehicleType,
+                        vehicle_count: this.dataset.vehicleCount,
+                        load_percentage: this.dataset.loadPercentage,
+                        empty_return: this.dataset.emptyReturn
+                    };
+                    
+                    // Make API call
+                    fetch('{% url "calculate_carbon_footprint" %}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                        },
+                        body: JSON.stringify(data)
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            resultsDiv.querySelector('.distance').textContent = `${data.distance_km} km`;
+                            resultsDiv.querySelector('.total-emissions').textContent = `${data.total_emissions_kg} kg CO₂`;
+                            resultsDiv.querySelector('.per-vehicle').textContent = `${data.emissions_per_vehicle_kg} kg CO₂`;
+                            resultsDiv.querySelector('.trees').textContent = `${data.equivalent_trees} trees`;
+                            
+                            // Update the bid card with calculated values
+                            const bidCard = btn.closest('.bid-card');
+                            if (bidCard) {
+                                const transportDetails = bidCard.querySelector('.transport-details');
+                                if (transportDetails) {
+                                    const distanceElement = document.createElement('p');
+                                    distanceElement.innerHTML = `<strong>Calculated Distance:</strong> ${data.distance_km} km`;
+                                    transportDetails.appendChild(distanceElement);
+                                    
+                                    const emissionsElement = document.createElement('p');
+                                    emissionsElement.innerHTML = `<strong>Calculated Emissions:</strong> ${data.total_emissions_kg} kg CO₂`;
+                                    transportDetails.appendChild(emissionsElement);
+                                }
+                            }
+                        } else {
+                            resultsDiv.querySelector('.distance').textContent = `Error: ${data.error || 'Calculation failed'}`;
+                        }
+                    })
+                    .catch(error => {
+                        resultsDiv.querySelector('.distance').textContent = `Error: ${error.message}`;
+                        console.error('Error:', error);
+                    });
+                });
             });
         });
     </script>

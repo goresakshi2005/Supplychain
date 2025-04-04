@@ -5,7 +5,7 @@ from .forms import ManufacturerRegistrationForm, ManufacturerLoginForm
 from .models import Manufacturer, QuoteRequest
 from supplier.models import Supplier
 from django.contrib.auth.models import User
-
+import json
 from django.conf import settings
 from utils.email import send_email
 
@@ -13,6 +13,10 @@ from django.db.models import Avg  # Add this import
 
 from django.contrib import messages
 from django.shortcuts import render, redirect
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from utils.carbon_calculator import CarbonEmissionsCalculator
 
 def manufacturer_register(request):
     if request.method == 'POST':
@@ -417,3 +421,61 @@ def analyze_supplier(request, supplier_id):
         return JsonResponse({'error': 'Supplier not found'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+    
+@csrf_exempt
+def calculate_carbon_footprint(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST method required'}, status=400)
+    
+    try:
+        data = json.loads(request.body)
+        
+        # Validate required fields
+        required_fields = ['start_addr', 'end_addr', 'vehicle_type', 'vehicle_count', 'load_percentage']
+        for field in required_fields:
+            if field not in data or not data[field]:
+                return JsonResponse({
+                    'success': False,
+                    'error': f'Missing required field: {field}'
+                }, status=400)
+        
+        # Convert numeric fields
+        try:
+            vehicle_count = int(data['vehicle_count'])
+            load_percentage = float(data['load_percentage'])
+        except (ValueError, TypeError):
+            return JsonResponse({
+                'success': False,
+                'error': 'Invalid vehicle count or load percentage'
+            }, status=400)
+        
+        # Validate values
+        if vehicle_count <= 0:
+            return JsonResponse({
+                'success': False,
+                'error': 'Vehicle count must be positive'
+            }, status=400)
+            
+        if load_percentage <= 0 or load_percentage > 100:
+            return JsonResponse({
+                'success': False,
+                'error': 'Load percentage must be between 1 and 100'
+            }, status=400)
+        
+        calculator = CarbonEmissionsCalculator()
+        result = calculator.calculate_road_emissions(
+            start_addr=data['start_addr'],
+            end_addr=data['end_addr'],
+            vehicle_type=data['vehicle_type'],
+            vehicle_count=vehicle_count,
+            load_percentage=load_percentage,
+            empty_return=data.get('empty_return', 'false') == 'true'
+        )
+        
+        return JsonResponse(result)
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=400)

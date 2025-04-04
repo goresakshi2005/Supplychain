@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from manufacturer.models import QuoteRequest
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 class Supplier(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -53,6 +54,62 @@ class Bid(models.Model):
         default='pending'
     )
     transaction_hash = models.CharField(max_length=66, blank=True, null=True)
+    TRANSPORT_CHOICES = [
+        ('road', 'Road Transport'),
+        ('air', 'Air Transport'),
+    ]
+    
+    VEHICLE_CHOICES = [
+        ('small_truck', 'Small Truck (3.5-7.5 tons)'),
+        ('medium_truck', 'Medium Truck (7.5-16 tons)'),
+        ('large_truck', 'Large Truck (16-32 tons)'),
+        ('articulated_truck', 'Articulated Truck (>32 tons)'),
+    ]
+    
+    AIRCRAFT_CHOICES = [
+        ('cargo_plane', 'Cargo Plane'),
+        ('passenger_plane', 'Passenger Plane (Cargo Hold)'),
+    ]
+    
+    transport_mode = models.CharField(
+        max_length=20,
+        choices=TRANSPORT_CHOICES,
+        default='road'
+    )
+    
+    # Road transport fields
+    vehicle_type = models.CharField(
+        max_length=20,
+        choices=VEHICLE_CHOICES,
+        blank=True,
+        null=True
+    )
+    vehicle_count = models.PositiveIntegerField(
+        blank=True,
+        null=True
+    )
+    load_percentage = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(100)]
+    )
+    empty_return = models.BooleanField(default=False)
+    
+    # Air transport fields
+    aircraft_type = models.CharField(
+        max_length=20,
+        choices=AIRCRAFT_CHOICES,
+        blank=True,
+        null=True
+    )
+    flight_count = models.PositiveIntegerField(
+        blank=True,
+        null=True
+    )
+    
+    # Calculated fields
+    calculated_emissions = models.FloatField(null=True, blank=True)  # kg CO2
+    distance_km = models.FloatField(null=True, blank=True)    
 
     def get_negotiation_status(self):
         if hasattr(self, 'negotiation'):
@@ -61,6 +118,7 @@ class Bid(models.Model):
 
     def __str__(self):
         return f"Bid for {self.quote.product} by {self.supplier.company_name}"
+    
 
 
 # Add to supplier/models.py

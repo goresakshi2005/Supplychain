@@ -28,7 +28,8 @@ from geopy.distance import great_circle
 from geopy.geocoders import Nominatim
 from django.conf import settings
 from collections import defaultdict
-
+from utils.route_calculator import RouteFinder
+import math
 
 def supplier_register(request):
     if request.method == 'POST':
@@ -408,73 +409,49 @@ def submit_review(request, bid_id):
         'supplier': bid.supplier
     })
 
-
 @csrf_exempt
 @require_POST
 def calculate_route(request):
     try:
         data = json.loads(request.body)
-
-        # Get locations from request
+        
+        # Get data from request
         supplier_city = data['supplier_city']
         supplier_state = data['supplier_state']
         manufacturer_city = data['manufacturer_city']
         manufacturer_state = data['manufacturer_state']
         transport_mode = data['transport_mode']
-        lead_time = float(data['lead_time'])
-
-        # Initialize geocoder
-        geolocator = Nominatim(user_agent="supply_chain_app")
-
-        # Get coordinates for both locations
-        def get_coords(city, state):
-            location = geolocator.geocode(f"{city}, {state}", timeout=10)
-            if not location:
-                raise ValueError(f"Could not locate {city}, {state}")
-            return (location.latitude, location.longitude)
-
-        supplier_coords = get_coords(supplier_city, supplier_state)
-        manufacturer_coords = get_coords(manufacturer_city, manufacturer_state)
-
-        if transport_mode == 'road':
-            # Calculate detailed road route using OpenRouteService API
-            headers = {
-                'Authorization': settings.OPENROUTE_API_KEY,
-                'Content-Type': 'application/json'
-            }
-            body = {
-                "coordinates": [
-                    [supplier_coords[1], supplier_coords[0]],  # lon,lat format
-                    [manufacturer_coords[1], manufacturer_coords[0]]
-                ],
-                "instructions": "true",
-                "geometry": "true"
-            }
-
-            response = requests.post(
-                'https://api.openrouteservice.org/v2/directions/driving-car',
-                headers=headers,
-                json=body,
-                timeout=15
-            )
-
-            if response.status_code != 200:
-                raise ValueError(f"Road route error: {response.text}")
-
-            route_data = response.json()
-            distance_km = route_data['routes'][0]['summary']['distance'] / 1000
-            duration_hours = route_data['routes'][0]['summary']['duration'] / 3600
-            duration_days = duration_hours / 24
-
+        lead_time = data['lead_time']
+        
+        # Create addresses
+        supplier_address = f"{supplier_city}, {supplier_state}"
+        manufacturer_address = f"{manufacturer_city}, {manufacturer_state}"
+        
+        # Calculate route
+        route_finder = RouteFinder()
+        route_details = route_finder.calculate_route_details(
+            start_addr=supplier_address,
+            end_addr=manufacturer_address,
+            transport_mode=transport_mode,
+            lead_time_days=lead_time
+        )
+        
+        if not route_details:
+            return JsonResponse({
+                'success': False,
+                'error': 'Could not calculate route details'
+            }, status=400)
+        
+        # Format response for road transport
+        if route_details['mode'] == 'road':
             # Process detailed route steps
-            steps = route_data['routes'][0]['segments'][0]['steps']
             route_steps = []
             step_types = defaultdict(int)
-
-            for step in steps:
+            
+            for step in route_details['steps']:
                 instruction = step['instruction'].replace('Head', 'Continue')
                 distance = step['distance']
-
+                
                 # Classify step type
                 if 'highway' in instruction.lower() or 'motorway' in instruction.lower():
                     step_type = 'highway'
@@ -488,64 +465,54 @@ def calculate_route(request):
                     step_type = 'regular'
 
                 step_types[step_type] += 1
-
+                
                 route_steps.append({
                     'instruction': instruction,
                     'distance': f"{distance}m",
                     'type': step_type
                 })
-
+            
             # Generate route summary
-            highway_percentage = (step_types['highway'] / len(steps)) * 100
+            highway_percentage = (step_types['highway'] / len(route_steps)) * 100
             route_summary = (
-                f"Route includes {len(steps)} steps: "
+                f"Route includes {len(route_steps)} steps: "
                 f"{step_types['highway']} highway sections ({highway_percentage:.0f}%), "
                 f"{step_types['left_turn']} left turns, "
                 f"{step_types['right_turn']} right turns"
             )
-
+            
             # Generate detailed directions
             detailed_directions = "\n".join(
                 [f"{i+1}. {step['instruction']} ({step['distance']})"
                  for i, step in enumerate(route_steps)])
-
-            total_days = lead_time + duration_days
-
-            return JsonResponse({
+            
+            response_data = {
                 'success': True,
                 'mode': 'road',
-                'distance': round(distance_km, 1),
-                'transit_time': f"{round(duration_hours, 1)} hours",
+                'distance': route_details['distance'],
+                'transit_time': route_details['transit_time'],
                 'route_summary': route_summary,
                 'detailed_directions': detailed_directions,
-                'total_steps': len(steps),
+                'total_steps': len(route_steps),
                 'highway_percentage': round(highway_percentage),
-                'total_days': round(total_days, 1),
-                'delivery_days': math.ceil(total_days)
-            })
-
-        elif transport_mode == 'air':
-            # Calculate air distance and estimate time (kept simple)
-            distance_km = great_circle(supplier_coords, manufacturer_coords).km
-            flight_hours = distance_km / 900  # Average 900 km/h airspeed
-            handling_days = 1  # Standard 1 day for air freight handling
-            total_transit_days = (flight_hours / 24) + handling_days
-
-            total_days = lead_time + total_transit_days
-
-            return JsonResponse({
+                'total_days': route_details['total_days'],
+                'delivery_days': route_details['delivery_days']
+            }
+        
+        # Format response for air transport
+        else:
+            response_data = {
                 'success': True,
                 'mode': 'air',
-                'distance': round(distance_km, 1),
-                'transit_time': f"{round(flight_hours, 1)} hours flight + {handling_days} day handling",
+                'distance': route_details['distance'],
+                'transit_time': route_details['transit_time'],
                 'route_description': f"{supplier_city} Airport → {manufacturer_city} Airport",
-                'total_days': round(total_days, 1),
-                'delivery_days': math.ceil(total_days)
-            })
-
-        else:
-            raise ValueError("Invalid transport mode")
-
+                'total_days': route_details['total_days'],
+                'delivery_days': route_details['delivery_days']
+            }
+        
+        return JsonResponse(response_data)
+        
     except Exception as e:
         return JsonResponse({
             'success': False,

@@ -15,7 +15,7 @@
             background: white;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
         .form-group {
             margin-bottom: 15px;
@@ -25,10 +25,14 @@
             margin-bottom: 5px;
             font-weight: bold;
         }
-        input, textarea, select {
+        input,
+        textarea,
+        select {
             width: 100%;
             padding: 8px;
             box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 4px;
         }
         button {
             background: #007bff;
@@ -39,17 +43,26 @@
             cursor: pointer;
             margin-right: 10px;
         }
+        button:hover {
+            background: #0056b3;
+        }
         .route-options {
             margin: 20px 0;
             padding: 15px;
             background: #f8f9fa;
             border-radius: 5px;
         }
-        .route-option {
-            margin-bottom: 15px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+        .transport-details {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 5px;
+        }
+        .road-details,
+        .air-details {
+            margin-top: 15px;
         }
         .loading {
             display: none;
@@ -58,70 +71,78 @@
         }
         .error {
             color: #dc3545;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        .info-message {
+            color: #17a2b8;
+            font-size: 0.9em;
+            margin-top: 5px;
         }
         #delivery-time-result {
             font-weight: bold;
             margin-top: 10px;
+            padding: 10px;
+            background: #e9ecef;
+            border-radius: 4px;
         }
-
         .route-details {
-        margin-top: 15px;
-        padding: 10px;
-        background: #fff;
-        border-radius: 5px;
-        border: 1px solid #eee;
-    }
-    
-    .directions-container {
-        max-height: 300px;
-        overflow-y: auto;
-        padding: 5px;
-    }
-    
-    .direction-step {
-        padding: 8px 5px;
-        border-bottom: 1px solid #f0f0f0;
-        font-size: 0.9em;
-    }
-    
-    .direction-step:last-child {
-        border-bottom: none;
-    }
-    
-    .route-stats {
-        margin-top: 10px;
-        padding: 8px;
-        background: #f8f9fa;
-        border-radius: 4px;
-        font-size: 0.9em;
-    }
-    
-    .highway-step {
-        color: #2e7d32;
-        font-weight: bold;
-    }
-    
-    .turn-step {
-        color: #1565c0;
-    }
+            margin-top: 15px;
+            padding: 10px;
+            background: #fff;
+            border-radius: 5px;
+            border: 1px solid #eee;
+        }
+        .directions-container {
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 5px;
+        }
+        .direction-step {
+            padding: 8px 5px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 0.9em;
+        }
+        .direction-step:last-child {
+            border-bottom: none;
+        }
+        .route-stats {
+            margin-top: 10px;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        .highway-step {
+            color: #2e7d32;
+            font-weight: bold;
+        }
+        .turn-step {
+            color: #1565c0;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Submit Bid for {{ quote.product }}</h1>
-        <p><strong>Manufacturer:</strong> {{ quote.manufacturer.company_name }} ({{ quote.manufacturer.city }}, {{ quote.manufacturer.state }})</p>
-        <p><strong>Quantity:</strong> {{ quote.quantity }} {{ quote.unit }}</p>
-        <p><strong>Deadline:</strong> {{ quote.deadline|date:"M d, Y" }}</p>
-        
+        <div class="quote-details">
+            <p><strong>Manufacturer:</strong> {{ quote.manufacturer.company_name }} ({{ quote.manufacturer.city }}, {{ quote.manufacturer.state }})</p>
+            <p><strong>Quantity:</strong> {{ quote.quantity }} {{ quote.unit }}</p>
+            <p><strong>Deadline:</strong> {{ quote.deadline|date:"M d, Y" }}</p>
+            <p><strong>Special Requirements:</strong> {{ quote.special_requirements|default:"None" }}</p>
+        </div>
+
         <form method="post" id="bid-form">
             {% csrf_token %}
-            
+
             <div class="form-group">
                 <label for="id_bid_amount">Your Price ({{ quote.currency }})</label>
                 {{ form.bid_amount }}
-                {{ form.bid_amount.errors }}
+                {% if form.bid_amount.errors %}
+                <div class="error">{{ form.bid_amount.errors }}</div>
+                {% endif %}
             </div>
-            
+
             <div class="form-group">
                 <label for="transport_mode">Transportation Mode</label>
                 <select id="transport_mode" name="transport_mode" required>
@@ -130,187 +151,232 @@
                     <option value="air">By Air</option>
                 </select>
             </div>
-            
+
+            <!-- Road Transport Details -->
+            <div id="road-details" class="transport-details road-details">
+                <h3>Road Transport Details</h3>
+                <div class="form-group">
+                    <label for="vehicle_type">Vehicle Type</label>
+                    <select id="vehicle_type" name="vehicle_type">
+                        <option value="">Select vehicle type</option>
+                        <option value="small_truck">Small Truck (3.5-7.5 tons)</option>
+                        <option value="medium_truck">Medium Truck (7.5-16 tons)</option>
+                        <option value="large_truck">Large Truck (16-32 tons)</option>
+                        <option value="articulated_truck">Articulated Truck (>32 tons)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="vehicle_count">Number of Vehicles</label>
+                    <input type="number" id="vehicle_count" name="vehicle_count" min="1" value="1">
+                </div>
+                <div class="form-group">
+                    <label for="load_percentage">Load Percentage (%)</label>
+                    <input type="number" id="load_percentage" name="load_percentage" min="1" max="100" value="100">
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="empty_return" name="empty_return">
+                        Empty Return Trip
+                    </label>
+                </div>
+            </div>
+
+            <!-- Air Transport Details -->
+            <div id="air-details" class="transport-details air-details">
+                <h3>Air Transport Details</h3>
+                <div class="form-group">
+                    <label for="aircraft_type">Aircraft Type</label>
+                    <select id="aircraft_type" name="aircraft_type">
+                        <option value="">Select aircraft type</option>
+                        <option value="cargo_plane">Cargo Plane</option>
+                        <option value="passenger_plane">Passenger Plane (Cargo Hold)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="flight_count">Number of Flights</label>
+                    <input type="number" id="flight_count" name="flight_count" min="1" value="1">
+                </div>
+            </div>
+
             <div class="form-group">
                 <label for="lead_time">Lead Time (days for production/processing)</label>
                 <input type="number" id="lead_time" name="lead_time" min="0" step="1" required>
+                <div class="info-message">
+                    Enter the number of days needed to prepare the goods for shipment
+                </div>
             </div>
-            
+
             <div class="form-group">
                 <label for="id_delivery_time">Delivery Time (days)</label>
                 {{ form.delivery_time }}
-                {{ form.delivery_time.errors }}
+                {% if form.delivery_time.errors %}
+                <div class="error">{{ form.delivery_time.errors }}</div>
+                {% endif %}
+                <div class="info-message">This will be calculated automatically</div>
             </div>
-            
+
             <div class="route-options">
                 <h3>Route Information</h3>
-                <p>From: {{ supplier.company_name }} ({{ supplier.city }}, {{ supplier.state }})</p>
-                <p>To: {{ quote.manufacturer.company_name }} ({{ quote.manufacturer.city }}, {{ quote.manufacturer.state }})</p>
-                
+                <p><strong>From:</strong> {{ supplier.company_name }} ({{ supplier.city }}, {{ supplier.state }})</p>
+                <p><strong>To:</strong> {{ quote.manufacturer.company_name }} ({{ quote.manufacturer.city }}, {{ quote.manufacturer.state }})</p>
+
                 <div id="route-results">
-                    <p>Select transportation mode to calculate route details.</p>
+                    <p>Select transportation mode and click "Calculate" to see route details.</p>
                 </div>
-                
+
                 <div class="loading" id="route-loading">
                     Calculating route information...
                 </div>
-                
+
                 <div id="delivery-time-result"></div>
             </div>
-            
+
             <div class="form-group">
                 <label for="id_comments">Comments (Optional)</label>
                 {{ form.comments }}
-                {{ form.comments.errors }}
+                {% if form.comments.errors %}
+                <div class="error">{{ form.comments.errors }}</div>
+                {% endif %}
+                <div class="info-message">
+                    Add any special conditions or notes about your bid
+                </div>
             </div>
-            
-            <button type="button" id="calculate-btn">Calculate Delivery Time</button>
-            <button type="submit">Submit Bid</button>
+
+            <div class="form-actions">
+                <button type="button" id="calculate-btn">Calculate Delivery Time</button>
+                <button type="submit" id="submit-btn">Submit Bid</button>
+                <a href="{% url 'supplier_dashboard' %}" class="btn-cancel">Cancel</a>
+            </div>
         </form>
-        
-        <a href="{% url 'supplier_dashboard' %}">Back to Dashboard</a>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const transportMode = document.getElementById('transport_mode');
-            const leadTime = document.getElementById('lead_time');
-            const calculateBtn = document.getElementById('calculate-btn');
-            const routeResults = document.getElementById('route-results');
-            const routeLoading = document.getElementById('route-loading');
-            const deliveryTimeResult = document.getElementById('delivery-time-result');
-            const deliveryTimeInput = document.getElementById('id_delivery_time');
-            
-            // Function to calculate route and delivery time
-            calculateBtn.addEventListener('click', function() {
-                if (!transportMode.value || !leadTime.value) {
-                    alert('Please select transportation mode and enter lead time');
+        // Store template variables in JavaScript
+        const supplierData = {
+            companyName: "{{ supplier.company_name|escapejs }}",
+            city: "{{ supplier.city|escapejs }}",
+            state: "{{ supplier.state|escapejs }}"
+        };
+        
+        const manufacturerData = {
+            companyName: "{{ quote.manufacturer.company_name|escapejs }}",
+            city: "{{ quote.manufacturer.city|escapejs }}",
+            state: "{{ quote.manufacturer.state|escapejs }}"
+        };
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const transportMode = document.getElementById("transport_mode");
+            const roadDetails = document.getElementById("road-details");
+            const airDetails = document.getElementById("air-details");
+            const leadTime = document.getElementById("lead_time");
+            const calculateBtn = document.getElementById("calculate-btn");
+            const routeResults = document.getElementById("route-results");
+            const routeLoading = document.getElementById("route-loading");
+            const deliveryTimeResult = document.getElementById("delivery-time-result");
+            const deliveryTimeInput = document.getElementById("id_delivery_time");
+            const submitBtn = document.getElementById("submit-btn");
+
+            // Show/hide transport details based on selection
+            transportMode.addEventListener("change", function () {
+                roadDetails.style.display = "none";
+                airDetails.style.display = "none";
+
+                if (this.value === "road") {
+                    roadDetails.style.display = "block";
+                } else if (this.value === "air") {
+                    airDetails.style.display = "block";
+                }
+            });
+
+            // Validate form before submission
+            document.getElementById("bid-form").addEventListener("submit", function (e) {
+                if (!deliveryTimeInput.value || deliveryTimeInput.value === "0") {
+                    e.preventDefault();
+                    alert("Please calculate delivery time before submitting your bid");
+                    calculateBtn.focus();
+                }
+            });
+
+            // Calculate route and delivery time
+            calculateBtn.addEventListener("click", function () {
+                if (!transportMode.value) {
+                    alert("Please select transportation mode");
+                    transportMode.focus();
                     return;
                 }
-                
-                routeLoading.style.display = 'block';
-                routeResults.innerHTML = '';
-                deliveryTimeResult.innerHTML = '';
-                
-                // Get supplier and manufacturer locations from the template variables
-                const supplierLocation = "{{ supplier.city }}, {{ supplier.state }}";
-                const manufacturerLocation = "{{ quote.manufacturer.city }}, {{ quote.manufacturer.state }}";
-                
-                // In a real implementation, you would make an AJAX call to your backend
-                // Here we'll simulate the response based on the transport mode
-                setTimeout(function() {
-                    routeLoading.style.display = 'none';
-                    
-                    if (transportMode.value === 'road') {
-                        // Simulate road route response
-                        routeResults.innerHTML = `
-                            <div class="route-option">
-                                <h4>🚗 Road Transport</h4>
-                                <p><strong>Distance:</strong> Approximately 350 km</p>
-                                <p><strong>Transit Time:</strong> ~5 hours (0.6 days)</p>
-                                <p><strong>Route:</strong> {{ supplier.city }} → Highway → {{ quote.manufacturer.city }}</p>
-                            </div>
-                        `;
-                        
-                        const totalDays = parseFloat(leadTime.value) + 0.6;
-                        deliveryTimeResult.innerHTML = `Total Delivery Time: ${totalDays.toFixed(1)} days (${leadTime.value} days production + 0.6 days transit)`;
-                        deliveryTimeInput.value = Math.ceil(totalDays);
-                        
-                    } else if (transportMode.value === 'air') {
-                        // Simulate air route response
-                        routeResults.innerHTML = `
-                            <div class="route-option">
-                                <h4>✈️ Air Transport</h4>
-                                <p><strong>Distance:</strong> Approximately 300 km</p>
-                                <p><strong>Transit Time:</strong> ~2 hours (0.1 days) flight + 1 day handling</p>
-                                <p><strong>Route:</strong> {{ supplier.city }} Airport → {{ quote.manufacturer.city }} Airport</p>
-                            </div>
-                        `;
-                        
-                        const totalDays = parseFloat(leadTime.value) + 1.1;
-                        deliveryTimeResult.innerHTML = `Total Delivery Time: ${totalDays.toFixed(1)} days (${leadTime.value} days production + 1.1 days transit)`;
-                        deliveryTimeInput.value = Math.ceil(totalDays);
-                    }
-                }, 1000);
-            });
-            
-            function calculateRealRoute() {
+
+                if (!leadTime.value || leadTime.value < 0) {
+                    alert("Please enter a valid lead time (0 or more days)");
+                    leadTime.focus();
+                    return;
+                }
+
+                routeLoading.style.display = "block";
+                routeResults.innerHTML = "";
+                deliveryTimeResult.innerHTML = "";
+
+                // Prepare data for API call using the stored variables
+                const data = {
+                    supplier_city: supplierData.city,
+                    supplier_state: supplierData.state,
+                    manufacturer_city: manufacturerData.city,
+                    manufacturer_state: manufacturerData.state,
+                    transport_mode: transportMode.value,
+                    lead_time: leadTime.value
+                };
+
+                // Make API call to backend
                 fetch('{% url "calculate_route" %}', {
-                    method: 'POST',
+                    method: "POST",
                     headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': '{{ csrf_token }}'
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value,
                     },
-                    body: JSON.stringify({
-                        transport_mode: transportMode.value,
-                        supplier_city: "{{ supplier.city }}",
-                        supplier_state: "{{ supplier.state }}",
-                        manufacturer_city: "{{ quote.manufacturer.city }}",
-                        manufacturer_state: "{{ quote.manufacturer.state }}",
-                        lead_time: leadTime.value
-                    })
+                    body: JSON.stringify(data),
                 })
-                .then(response => response.json())
-                .then(data => {
-                    routeLoading.style.display = 'none';
-                    
+                .then((response) => response.json())
+                .then((data) => {
+                    routeLoading.style.display = "none";
+
                     if (!data.success) {
-                        routeResults.innerHTML = `<p class="error">${data.error}</p>`;
+                        routeResults.innerHTML = `<div class="error">${data.error || "Error calculating route"}</div>`;
                         return;
                     }
-                    
-                    if (data.mode === 'road') {
-                        // Detailed display for road transport
+
+                    if (data.mode === "road") {
                         routeResults.innerHTML = `
-                            <div class="route-option">
-                                <h4>🚗 Detailed Road Route</h4>
-                                <p><strong>Distance:</strong> ${data.distance} km</p>
-                                <p><strong>Estimated Transit Time:</strong> ${data.transit_time}</p>
-                                <p><strong>Route Summary:</strong> ${data.route_summary}</p>
-                                
-                                <div class="route-details">
-                                    <h5>Step-by-Step Directions:</h5>
-                                    <div class="directions-container">
-                                        ${data.detailed_directions.split('\n').map(step => 
-                                            `<div class="direction-step">${step}</div>`
-                                        ).join('')}
-                                    </div>
-                                </div>
-                                
-                                <p class="route-stats">
-                                    <strong>Route Statistics:</strong> 
-                                    ${data.total_steps} steps, 
-                                    ${data.highway_percentage}% highway
-                                </p>
+                        <div class="route-details">
+                            <h4>🚗 Road Transport Details</h4>
+                            <p><strong>Distance:</strong> ${data.distance} km</p>
+                            <p><strong>Transit Time:</strong> ${data.transit_time}</p>
+                            <div class="route-stats">${data.route_summary}</div>
+                            <div class="directions-container">
+                                ${data.detailed_directions.split("\n").map(
+                                    (step) => `<div class="direction-step">${step}</div>`
+                                ).join("")}
                             </div>
+                        </div>
                         `;
-                    } else {
-                        // Simple display for air transport
+                    } else if (data.mode === "air") {
                         routeResults.innerHTML = `
-                            <div class="route-option">
-                                <h4>✈️ Air Transport</h4>
-                                <p><strong>Distance:</strong> ${data.distance} km</p>
-                                <p><strong>Transit Time:</strong> ${data.transit_time}</p>
-                                <p><strong>Route:</strong> ${data.route_description}</p>
-                            </div>
+                        <div class="route-details">
+                            <h4>✈️ Air Transport Details</h4>
+                            <p><strong>Distance:</strong> ${data.distance} km</p>
+                            <p><strong>Transit Time:</strong> ${data.transit_time}</p>
+                            <p><strong>Route:</strong> ${data.route_description}</p>
+                        </div>
                         `;
                     }
-                    
-                    // Display total delivery time
-                    const transit_days = (data.total_days - parseFloat(leadTime.value)).toFixed(1);
-                    deliveryTimeResult.innerHTML = `
-                        <strong>Total Delivery Time:</strong> ${data.total_days} days<br>
-                        (${leadTime.value} days production + ${transit_days} days transit)
-                    `;
-                    
-                    // Update the delivery time field in the form
+
+                    deliveryTimeResult.innerHTML = `Total Delivery Time: ${data.total_days} days (${leadTime.value} days production + ${(data.total_days - parseFloat(leadTime.value)).toFixed(1)} days transit)`;
                     deliveryTimeInput.value = data.delivery_days;
+                    submitBtn.disabled = false;
                 })
-                .catch(error => {
-                    routeLoading.style.display = 'none';
-                    routeResults.innerHTML = `<p class="error">Error calculating route: ${error.message}</p>`;
+                .catch((error) => {
+                    routeLoading.style.display = "none";
+                    routeResults.innerHTML = `<div class="error">Error calculating route: ${error.message}</div>`;
                 });
-            }
+            });
         });
     </script>
 </body>
