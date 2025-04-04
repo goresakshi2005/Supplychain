@@ -39,18 +39,77 @@ from django import forms
 from .models import Bid
 
 class BidForm(forms.ModelForm):
+    transport_mode = forms.ChoiceField(
+        choices=Bid.TRANSPORT_CHOICES,
+        initial='road',
+        widget=forms.RadioSelect
+    )
+    vehicle_type = forms.ChoiceField(
+        choices=Bid.VEHICLE_CHOICES,
+        required=False
+    )
+    vehicle_count = forms.IntegerField(
+        min_value=1,
+        required=False,
+        initial=1
+    )
+    load_percentage = forms.IntegerField(
+        min_value=1,
+        max_value=100,
+        required=False,
+        initial=100
+    )
+    empty_return = forms.BooleanField(
+        required=False,
+        initial=False
+    )
+    aircraft_type = forms.ChoiceField(
+        choices=Bid.AIRCRAFT_CHOICES,
+        required=False
+    )
+    flight_count = forms.IntegerField(
+        min_value=1,
+        required=False,
+        initial=1
+    )
+
     class Meta:
         model = Bid
-        fields = ['bid_amount', 'delivery_time', 'comments']
+        fields = [
+            'bid_amount', 
+            'delivery_time', 
+            'comments',
+            'transport_mode',
+            'vehicle_type',
+            'vehicle_count',
+            'load_percentage',
+            'empty_return',
+            'aircraft_type',
+            'flight_count'
+        ]
         widgets = {
             'comments': forms.Textarea(attrs={'rows': 4}),
         }
-    
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['bid_amount'].label = "Your Price"
-        self.fields['delivery_time'].label = "Delivery Time (days)"
-        self.fields['comments'].required = False
+        
+    def clean(self):
+        cleaned_data = super().clean()
+        transport_mode = cleaned_data.get('transport_mode')
+        
+        if transport_mode == 'road':
+            if not cleaned_data.get('vehicle_type'):
+                self.add_error('vehicle_type', 'This field is required for road transport')
+            if not cleaned_data.get('vehicle_count'):
+                self.add_error('vehicle_count', 'This field is required for road transport')
+            if not cleaned_data.get('load_percentage'):
+                self.add_error('load_percentage', 'This field is required for road transport')
+        
+        elif transport_mode == 'air':
+            if not cleaned_data.get('aircraft_type'):
+                self.add_error('aircraft_type', 'This field is required for air transport')
+            if not cleaned_data.get('flight_count'):
+                self.add_error('flight_count', 'This field is required for air transport')
+        
+        return cleaned_data
 
 # Add to supplier/forms.py
 from django import forms

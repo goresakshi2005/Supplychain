@@ -59,3 +59,99 @@
 2025-04-04 13:48:27,073 - DEBUG - https://nominatim.openstreetmap.org:443 "GET /search?q=Mumbai%2C+Maharashtra&format=json&limit=1 HTTP/1.1" 200 441
 2025-04-04 13:48:27,075 - DEBUG - Starting new HTTPS connection (1): api.openrouteservice.org:443
 2025-04-04 13:48:28,117 - DEBUG - https://api.openrouteservice.org:443 "POST /v2/directions/driving-car HTTP/1.1" 200 None
+2025-04-04 19:39:37,610 - WARNING - Not Found: /favicon.ico
+2025-04-04 19:41:08,536 - DEBUG - Converted retries value: 2 -> Retry(total=2, connect=None, read=None, redirect=None, status=None)
+2025-04-04 19:41:08,537 - DEBUG - Converted retries value: 2 -> Retry(total=2, connect=None, read=None, redirect=None, status=None)
+2025-04-04 19:41:08,537 - INFO - Geocoder initialized successfully
+2025-04-04 19:41:08,537 - DEBUG - Nominatim.geocode: https://nominatim.openstreetmap.org/search?q=Phoenix%2C+Arizona&format=json&limit=1
+2025-04-04 19:41:08,539 - DEBUG - Starting new HTTPS connection (1): nominatim.openstreetmap.org:443
+2025-04-04 19:41:10,173 - DEBUG - https://nominatim.openstreetmap.org:443 "GET /search?q=Phoenix%2C+Arizona&format=json&limit=1 HTTP/11" 200 451
+2025-04-04 19:41:10,175 - DEBUG - Nominatim.geocode: https://nominatim.openstreetmap.org/search?q=Mumbai%2C+Maharashtra&format=json&limit=1
+2025-04-04 19:41:11,341 - DEBUG - https://nominatim.openstreetmap.org:443 "GET /search?q=Mumbai%2C+Maharashtra&format=json&limit=1 HTTP/11" 200 441
+2025-04-04 19:41:11,342 - DEBUG - Starting new HTTPS connection (1): api.openrouteservice.org:443
+2025-04-04 19:41:12,332 - DEBUG - https://api.openrouteservice.org:443 "POST /v2/directions/driving-car HTTP/11" 400 289
+2025-04-04 19:41:12,333 - WARNING - Road route error: {"error":{"code":2004,"message":"Request parameters exceed the server configuration limits. The approximated route distance must not be greater than 6000000.0 meters."},"info":{"engine":{"build_date":"2025-03-14T11:07:03Z","graph_version":"1","version":"9.1.1"},"timestamp":1743775873097}}
+2025-04-04 19:41:12,334 - WARNING - Bad Request: /supplier/calculate-route/
+2025-04-04 19:41:23,214 - DEBUG - Converted retries value: 2 -> Retry(total=2, connect=None, read=None, redirect=None, status=None)
+2025-04-04 19:41:23,214 - DEBUG - Converted retries value: 2 -> Retry(total=2, connect=None, read=None, redirect=None, status=None)
+2025-04-04 19:41:23,214 - INFO - Geocoder initialized successfully
+2025-04-04 19:41:23,214 - DEBUG - Nominatim.geocode: https://nominatim.openstreetmap.org/search?q=Phoenix%2C+Arizona&format=json&limit=1
+2025-04-04 19:41:23,215 - DEBUG - Starting new HTTPS connection (1): nominatim.openstreetmap.org:443
+2025-04-04 19:41:24,004 - DEBUG - https://nominatim.openstreetmap.org:443 "GET /search?q=Phoenix%2C+Arizona&format=json&limit=1 HTTP/11" 200 451
+2025-04-04 19:41:24,005 - DEBUG - RateLimiter sleep(0.2097451000008732)
+2025-04-04 19:41:24,216 - DEBUG - Nominatim.geocode: https://nominatim.openstreetmap.org/search?q=Mumbai%2C+Maharashtra&format=json&limit=1
+2025-04-04 19:41:25,314 - DEBUG - https://nominatim.openstreetmap.org:443 "GET /search?q=Mumbai%2C+Maharashtra&format=json&limit=1 HTTP/11" 200 441
+2025-04-04 19:41:25,315 - DEBUG - Starting new HTTPS connection (1): api.openrouteservice.org:443
+2025-04-04 19:41:26,497 - DEBUG - https://api.openrouteservice.org:443 "POST /v2/directions/driving-car HTTP/11" 400 289
+2025-04-04 19:41:26,498 - WARNING - Road route error: {"error":{"code":2004,"message":"Request parameters exceed the server configuration limits. The approximated route distance must not be greater than 6000000.0 meters."},"info":{"engine":{"build_date":"2025-03-14T11:07:03Z","graph_version":"1","version":"9.1.1"},"timestamp":1743775887262}}
+2025-04-04 19:41:26,499 - WARNING - Bad Request: /supplier/calculate-route/
+2025-04-04 19:48:14,898 - INFO - C:\Users\Ganesh\Hackathons\supplyChainGS\Supplychain\manufacturer\forms.py changed, reloading.
+2025-04-04 19:48:20,140 - INFO - C:\Users\Ganesh\Hackathons\supplyChainGS\Supplychain\manufacturer\forms.py changed, reloading.
+2025-04-04 19:48:50,695 - INFO - C:\Users\Ganesh\Hackathons\supplyChainGS\Supplychain\supplier\forms.py changed, reloading.
+2025-04-04 19:51:22,763 - ERROR - Internal Server Error: /supplier/register/
+Traceback (most recent call last):
+  File "C:\Users\Ganesh\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ganesh\AppData\Local\Programs\Python\Python312\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Ganesh\Hackathons\supplyChainGS\Supplychain\supplier\views.py", line 46, in supplier_register
+    first_name=form.cleaned_data['first_name'],
+               ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+KeyError: 'first_name'
+2025-04-04 19:51:55,717 - INFO - C:\Users\Ganesh\Hackathons\supplyChainGS\Supplychain\supplier\forms.py changed, reloading.
+2025-04-04 19:52:01,046 - INFO - C:\Users\Ganesh\Hackathons\supplyChainGS\Supplychain\manufacturer\forms.py changed, reloading.
+2025-04-04 20:13:38,662 - WARNING - Not Found: /favicon.ico
+2025-04-04 20:25:31,834 - DEBUG - Converted retries value: 2 -> Retry(total=2, connect=None, read=None, redirect=None, status=None)
+2025-04-04 20:25:31,834 - DEBUG - Converted retries value: 2 -> Retry(total=2, connect=None, read=None, redirect=None, status=None)
+2025-04-04 20:25:31,835 - INFO - Geocoder initialized successfully
+2025-04-04 20:25:31,835 - DEBUG - Nominatim.geocode: https://nominatim.openstreetmap.org/search?q=Noida%2C+Uttar+Pradesh&format=json&limit=1
+2025-04-04 20:25:31,835 - DEBUG - Starting new HTTPS connection (1): nominatim.openstreetmap.org:443
+2025-04-04 20:25:32,864 - DEBUG - https://nominatim.openstreetmap.org:443 "GET /search?q=Noida%2C+Uttar+Pradesh&format=json&limit=1 HTTP/11" 200 453
+2025-04-04 20:25:32,865 - DEBUG - Nominatim.geocode: https://nominatim.openstreetmap.org/search?q=New+Delhi%2C+Delhi&format=json&limit=1
+2025-04-04 20:25:34,068 - DEBUG - https://nominatim.openstreetmap.org:443 "GET /search?q=New+Delhi%2C+Delhi&format=json&limit=1 HTTP/11" 200 528
+2025-04-04 20:25:34,069 - DEBUG - Starting new HTTPS connection (1): api.openrouteservice.org:443
+2025-04-04 20:25:35,023 - DEBUG - https://api.openrouteservice.org:443 "POST /v2/directions/driving-car HTTP/11" 200 None
+2025-04-04 20:27:40,492 - DEBUG - connect_tcp.started host='api.phidata.com' port=443 local_address=None timeout=60 socket_options=None
+2025-04-04 20:27:40,967 - DEBUG - connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x0000027834060EF0>
+2025-04-04 20:27:40,967 - DEBUG - start_tls.started ssl_context=<ssl.SSLContext object at 0x00000278348AB050> server_hostname='api.phidata.com' timeout=60
+2025-04-04 20:27:41,556 - DEBUG - start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x0000027833DF6090>
+2025-04-04 20:27:41,557 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-04-04 20:27:41,558 - DEBUG - send_request_headers.complete
+2025-04-04 20:27:41,558 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-04-04 20:27:41,558 - DEBUG - send_request_body.complete
+2025-04-04 20:27:41,559 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-04-04 20:27:41,842 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Fri, 04 Apr 2025 14:57:42 GMT'), (b'Content-Type', b'application/json'), (b'Content-Length', b'72'), (b'Connection', b'keep-alive'), (b'server', b'uvicorn')])
+2025-04-04 20:27:41,843 - INFO - HTTP Request: POST https://api.phidata.com/v1/telemetry/agent/run/create "HTTP/1.1 200 OK"
+2025-04-04 20:27:41,843 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-04-04 20:27:41,843 - DEBUG - receive_response_body.complete
+2025-04-04 20:27:41,843 - DEBUG - response_closed.started
+2025-04-04 20:27:41,844 - DEBUG - response_closed.complete
+2025-04-04 20:27:41,844 - DEBUG - close.started
+2025-04-04 20:27:41,844 - DEBUG - close.complete
+2025-04-04 20:35:02,070 - INFO - C:\Users\Ganesh\Hackathons\supplyChainGS\Supplychain\supplier\forms.py changed, reloading.
+2025-04-04 20:35:49,588 - INFO - C:\Users\Ganesh\Hackathons\supplyChainGS\Supplychain\supplier\views.py changed, reloading.
+2025-04-04 20:35:56,836 - INFO - C:\Users\Ganesh\Hackathons\supplyChainGS\Supplychain\supplier\views.py changed, reloading.
+2025-04-04 20:36:33,973 - INFO - C:\Users\Ganesh\Hackathons\supplyChainGS\Supplychain\supplier\forms.py changed, reloading.
+2025-04-04 20:37:36,197 - DEBUG - Converted retries value: 2 -> Retry(total=2, connect=None, read=None, redirect=None, status=None)
+2025-04-04 20:37:36,198 - DEBUG - Converted retries value: 2 -> Retry(total=2, connect=None, read=None, redirect=None, status=None)
+2025-04-04 20:37:36,198 - INFO - Geocoder initialized successfully
+2025-04-04 20:37:36,198 - DEBUG - Nominatim.geocode: https://nominatim.openstreetmap.org/search?q=Noida%2C+Uttar+Pradesh&format=json&limit=1
+2025-04-04 20:37:36,199 - DEBUG - Starting new HTTPS connection (1): nominatim.openstreetmap.org:443
+2025-04-04 20:37:36,904 - DEBUG - https://nominatim.openstreetmap.org:443 "GET /search?q=Noida%2C+Uttar+Pradesh&format=json&limit=1 HTTP/11" 200 453
+2025-04-04 20:37:36,905 - DEBUG - RateLimiter sleep(0.2943597999983467)
+2025-04-04 20:37:37,200 - DEBUG - Nominatim.geocode: https://nominatim.openstreetmap.org/search?q=New+Delhi%2C+Delhi&format=json&limit=1
+2025-04-04 20:37:38,073 - DEBUG - https://nominatim.openstreetmap.org:443 "GET /search?q=New+Delhi%2C+Delhi&format=json&limit=1 HTTP/11" 200 528
+2025-04-04 20:37:38,075 - DEBUG - Starting new HTTPS connection (1): api.openrouteservice.org:443
+2025-04-04 20:37:38,947 - DEBUG - https://api.openrouteservice.org:443 "POST /v2/directions/driving-car HTTP/11" 200 None
+2025-04-04 20:38:23,638 - DEBUG - Converted retries value: 2 -> Retry(total=2, connect=None, read=None, redirect=None, status=None)
+2025-04-04 20:38:23,638 - DEBUG - Converted retries value: 2 -> Retry(total=2, connect=None, read=None, redirect=None, status=None)
+2025-04-04 20:38:23,639 - DEBUG - Nominatim.geocode: https://nominatim.openstreetmap.org/search?q=Noida%2C+Uttar+Pradesh&format=json&limit=1
+2025-04-04 20:38:23,639 - DEBUG - Starting new HTTPS connection (1): nominatim.openstreetmap.org:443
+2025-04-04 20:38:24,260 - DEBUG - https://nominatim.openstreetmap.org:443 "GET /search?q=Noida%2C+Uttar+Pradesh&format=json&limit=1 HTTP/11" 200 453
+2025-04-04 20:38:24,260 - DEBUG - RateLimiter sleep(0.37887339999724645)
+2025-04-04 20:38:24,640 - DEBUG - Nominatim.geocode: https://nominatim.openstreetmap.org/search?q=New+Delhi%2C+Delhi&format=json&limit=1
+2025-04-04 20:38:25,343 - DEBUG - https://nominatim.openstreetmap.org:443 "GET /search?q=New+Delhi%2C+Delhi&format=json&limit=1 HTTP/11" 200 528
+2025-04-04 20:38:25,345 - DEBUG - Starting new HTTPS connection (1): api.openrouteservice.org:443
+2025-04-04 20:38:26,509 - DEBUG - https://api.openrouteservice.org:443 "POST /v2/directions/driving-car HTTP/11" 200 None

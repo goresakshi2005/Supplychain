@@ -163,10 +163,21 @@ def submit_bid(request, quote_id):
         form = BidForm(request.POST)
         if form.is_valid():
             try:
-                # Create the bid but don't save yet
                 bid = form.save(commit=False)
                 bid.supplier = supplier
                 bid.quote = quote
+                
+                # Save transport details
+                bid.transport_mode = form.cleaned_data['transport_mode']
+                if bid.transport_mode == 'road':
+                    bid.vehicle_type = form.cleaned_data['vehicle_type']
+                    bid.vehicle_count = form.cleaned_data['vehicle_count']
+                    bid.load_percentage = form.cleaned_data['load_percentage']
+                    bid.empty_return = form.cleaned_data['empty_return']
+                else:  # air transport
+                    bid.aircraft_type = form.cleaned_data['aircraft_type']
+                    bid.flight_count = form.cleaned_data['flight_count']
+                
                 bid.save()
 
                 # Send bid confirmation to supplier
