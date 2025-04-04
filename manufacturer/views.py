@@ -371,3 +371,49 @@ def get_commodity_price(request):
     fetcher = CommodityPriceFetcher()
     price_data = fetcher.fetch_price(commodity)
     return JsonResponse(price_data)
+
+
+
+# manufacturer/views.py
+from phi.agent import Agent
+from phi.tools.sql import SQLTools
+from phi.model.google import Gemini
+from django.http import JsonResponse
+from supplier.models import Supplier
+
+def analyze_supplier(request, supplier_id):
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Authentication required'}, status=403)
+    
+    try:
+        supplier = Supplier.objects.get(id=supplier_id)
+        
+        # Initialize the agent
+        db_url = "sqlite:///db.sqlite3"
+        agent = Agent(
+            tools=[SQLTools(db_url=db_url)],
+            model=Gemini(id="gemini-2.0-flash-exp", temperature=0.4)
+        )
+        
+        # Get the analysis
+        response = agent.run(
+            f"""Analyze all feedback comments for {supplier.company_name} (ID: {supplier_id}) from the supplier_supplierreview table and provide ONLY the final recommendation based on:
+            1. The key points from each feedback
+            2. Common themes across all feedbacks
+            3. Overall supplier performance assessment
+            4. Specific strengths and weaknesses
+            5. Areas needing improvement
+            
+            Present JUST the recommendation in one concise paragraph.
+            In the response, always refer to the supplier by their company name ({supplier.company_name}) rather than "Supplier {supplier_id}"."""
+        )
+        
+        return JsonResponse({
+            'supplier_name': supplier.company_name,
+            'analysis': response.content if response else "No analysis available"
+        })
+        
+    except Supplier.DoesNotExist:
+        return JsonResponse({'error': 'Supplier not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

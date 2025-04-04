@@ -20,4 +20,5 @@ urlpatterns = [
     path('direct-accept-bid/<int:bid_id>/', views.accept_bid, name='direct_accept_bid'),
     path('supplier-profile/<int:supplier_id>/', views.view_supplier_profile, name='view_supplier_profile'),
     path('commodity-price/', views.get_commodity_price, name='commodity_price'),
+    path('analyze-supplier/<int:supplier_id>/', views.analyze_supplier, name='analyze_supplier'),
 ]

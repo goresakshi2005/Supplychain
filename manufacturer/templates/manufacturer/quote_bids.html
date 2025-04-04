@@ -72,6 +72,72 @@
             font-size: 0.9em;
             margin-left: 10px;
         }
+        .transport-details {
+            margin-top: 10px;
+            padding: 10px;
+            background: #e9ecef;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        /* New modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 60%;
+            max-height: 70vh;
+            overflow-y: auto;
+            border-radius: 8px;
+        }
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close-btn:hover {
+            color: black;
+        }
+        .analyze-btn {
+            background: #14086b;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            margin-right: 10px;
+        }
+        .analyze-btn:hover {
+            background: #5a6268;
+        }
+        .analysis-results {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        .negotiate-btn {
+            display: inline-block;
+            padding: 8px 15px;
+            background: #ffc107;
+            color: #000;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -102,29 +168,36 @@
                 </h3>
                 <p><strong>Bid Amount:</strong> {{ quote.currency }} {{ bid.bid_amount }}</p>
                 <p><strong>Delivery Time:</strong> {{ bid.delivery_time }} days</p>
+                
+                <div class="transport-details">
+                    <p><strong>Transportation:</strong></p>
+                    <p>{{ bid.vehicle_count }} x {{ bid.get_vehicle_type_display }} ({{ bid.get_fuel_type_display }})</p>
+                    <p>Capacity: {{ bid.vehicle_capacity }} kg per vehicle</p>
+                </div>
+                
                 <p><strong>Status:</strong> <span class="status status-{{ bid.status }}">{{ bid.get_status_display }}</span></p>
                 {% if bid.comments %}
                 <p><strong>Comments:</strong> {{ bid.comments }}</p>
                 {% endif %}
                 
-                {% if bid.status == 'submitted' and quote.status == 'open' %}
                 <div class="action-buttons">
+                    <button class="analyze-btn" data-supplier-id="{{ bid.supplier.id }}">Analyze Supplier</button>
+                    
+                    {% if bid.status == 'submitted' and quote.status == 'open' %}
                     <form method="post" action="{% url 'direct_accept_bid' bid.id %}" style="display: inline;">
                         {% csrf_token %}
                         <button type="submit" class="accept-btn">Accept Bid</button>
                     </form>
                     <a href="{% url 'start_negotiation' bid.id %}" class="negotiate-btn">Negotiate</a>
+                    {% endif %}
                 </div>
-                {% endif %}
             
-                <!-- Add this to the bid-card section where status is accepted -->
                 {% if bid.status == 'accepted' and not bid.feedback_given %}
                     <a href="{% url 'submit_review' bid.id %}" class="feedback-btn">Submit Feedback</a>
                 {% endif %}
             
                 <small>Submitted on {{ bid.submitted_at|date:"M d, Y" }}</small>
             </div>
-
             {% endfor %}
         </div>
         {% else %}
@@ -133,5 +206,63 @@
         
         <a href="{% url 'manufacturer_quote_history' %}" class="back-link">← Back to Quote History</a>
     </div>
+
+    <!-- Analysis Modal -->
+    <div id="analysisModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h3>Supplier Analysis</h3>
+            <div id="analysisResults" class="analysis-results">
+                <p>Analyzing supplier feedback... This may take a moment.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Modal functionality
+            const modal = document.getElementById('analysisModal');
+            const closeBtn = document.querySelector('.close-btn');
+            
+            document.querySelectorAll('.analyze-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const supplierId = this.dataset.supplierId;
+                    modal.style.display = 'block';
+                    
+                    // Clear previous results
+                    document.getElementById('analysisResults').innerHTML = 
+                        '<p>Analyzing supplier feedback... This may take a moment.</p>';
+                    
+                    // Fetch analysis
+                    fetch(`/manufacturer/analyze-supplier/${supplierId}/`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.analysis) {
+                                document.getElementById('analysisResults').innerHTML = 
+                                    `<h4>Analysis for ${data.supplier_name}</h4>
+                                     <p>${data.analysis}</p>`;
+                            } else {
+                                document.getElementById('analysisResults').innerHTML = 
+                                    `<p>Error: ${data.error || 'Unable to analyze supplier'}</p>`;
+                            }
+                        })
+                        .catch(error => {
+                            document.getElementById('analysisResults').innerHTML = 
+                                `<p>Error: ${error.message}</p>`;
+                        });
+                });
+            });
+            
+            closeBtn.addEventListener('click', function() {
+                modal.style.display = 'none';
+            });
+            
+            window.addEventListener('click', function(event) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
+    </script>
 </body>
 </html>
