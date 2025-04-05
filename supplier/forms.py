@@ -18,7 +18,6 @@ class SupplierRegistrationForm(UserCreationForm):
                                    label="Ethereum Wallet Address (0x...)")
 
     class Meta:
-        model = User
         fields = ('username', 'email', 'password1', 'password2',
                   'first_name', 'last_name', 'company_name', 'city', 
                   'state', 'business_type', 'website', 'phone_number', 

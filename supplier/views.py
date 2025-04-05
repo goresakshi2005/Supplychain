@@ -1,3 +1,6 @@
+from manufacturer.models import QuoteRequest
+from .models import Supplier, Bid
+from .forms import BidForm
 from .models import SupplierReview, Bid
 from .forms import ReviewForm
 from django.shortcuts import get_object_or_404, redirect
@@ -30,6 +33,7 @@ from django.conf import settings
 from collections import defaultdict
 from utils.route_calculator import RouteFinder
 import math
+
 
 def supplier_register(request):
     if request.method == 'POST':
@@ -145,12 +149,7 @@ def supplier_dashboard(request):
 
 
 # supplier/views.py
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from .forms import BidForm
-from .models import Supplier, Bid
-from manufacturer.models import QuoteRequest
-from utils.email import send_email
+
 
 def submit_bid(request, quote_id):
     if not request.user.is_authenticated:
@@ -166,7 +165,7 @@ def submit_bid(request, quote_id):
                 bid = form.save(commit=False)
                 bid.supplier = supplier
                 bid.quote = quote
-                
+
                 # Save transport details
                 bid.transport_mode = form.cleaned_data['transport_mode']
                 if bid.transport_mode == 'road':
@@ -177,7 +176,7 @@ def submit_bid(request, quote_id):
                 else:  # air transport
                     bid.aircraft_type = form.cleaned_data['aircraft_type']
                     bid.flight_count = form.cleaned_data['flight_count']
-                
+
                 bid.save()
 
                 # Send bid confirmation to supplier
@@ -205,9 +204,10 @@ def submit_bid(request, quote_id):
                     }
                 )
 
-                messages.success(request, 'Your bid has been submitted successfully!')
+                messages.success(
+                    request, 'Your bid has been submitted successfully!')
                 return redirect('supplier_dashboard')
-            
+
             except Exception as e:
                 messages.error(request, f'Error submitting bid: {str(e)}')
         else:
@@ -243,32 +243,56 @@ def edit_profile(request):
     if not request.user.is_authenticated:
         return redirect('supplier_login')
 
-    supplier = Supplier.objects.get(user=request.user)
+    try:
+        supplier = Supplier.objects.get(user=request.user)
+    except Supplier.DoesNotExist:
+        messages.error(request, "Supplier profile not found")
+        return redirect('supplier_dashboard')
 
     if request.method == 'POST':
-        # Update basic fields (no image handling)
-        supplier.first_name = request.POST.get(
-            'first_name', supplier.first_name)
-        supplier.last_name = request.POST.get('last_name', supplier.last_name)
-        supplier.company_name = request.POST.get(
-            'company_name', supplier.company_name)
-        supplier.city = request.POST.get('city', supplier.city)
-        supplier.state = request.POST.get('state', supplier.state)
-        supplier.business_type = request.POST.get(
-            'business_type', supplier.business_type)
-        supplier.website = request.POST.get('website', supplier.website)
-        supplier.phone_number = request.POST.get(
-            'phone_number', supplier.phone_number)
-        supplier.key_services = request.POST.get(
-            'key_services', supplier.key_services)
-        supplier.save()
+        # Get all form data
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        company_name = request.POST.get('company_name')
+        city = request.POST.get('city')
+        state = request.POST.get('state')
+        business_type = request.POST.get('business_type')
+        website = request.POST.get('website')
+        phone_number = request.POST.get('phone_number')
+        key_services = request.POST.get('key_services')
+        wallet_address = request.POST.get('wallet_address')
 
-        messages.success(request, 'Profile updated successfully!')
-        return redirect('supplier_profile')
+        # Basic validation
+        if not all([first_name, last_name, company_name, city, state, business_type, phone_number, key_services, wallet_address]):
+            messages.error(request, "All required fields must be filled")
+            return render(request, 'supplier/edit_profile.html', {'supplier': supplier})
 
-    return render(request, 'supplier/edit_profile.html', {
-        'supplier': supplier
-    })
+        # Validate wallet address format
+        if not wallet_address.startswith('0x') or len(wallet_address) != 42:
+            messages.error(
+                request, "Please enter a valid Ethereum wallet address (should start with 0x and be 42 characters long)")
+            return render(request, 'supplier/edit_profile.html', {'supplier': supplier})
+
+        # Update supplier fields
+        supplier.first_name = first_name
+        supplier.last_name = last_name
+        supplier.company_name = company_name
+        supplier.city = city
+        supplier.state = state
+        supplier.business_type = business_type
+        supplier.website = website
+        supplier.phone_number = phone_number
+        supplier.key_services = key_services
+        supplier.wallet_address = wallet_address
+
+        try:
+            supplier.save()
+            messages.success(request, 'Profile updated successfully!')
+            return redirect('supplier_profile')
+        except Exception as e:
+            messages.error(request, f'Error saving profile: {str(e)}')
+
+    return render(request, 'supplier/edit_profile.html', {'supplier': supplier})
 
 
 def view_manufacturer_profile(request, manufacturer_id):
@@ -420,12 +444,13 @@ def submit_review(request, bid_id):
         'supplier': bid.supplier
     })
 
+
 @csrf_exempt
 @require_POST
 def calculate_route(request):
     try:
         data = json.loads(request.body)
-        
+
         # Get data from request
         supplier_city = data['supplier_city']
         supplier_state = data['supplier_state']
@@ -433,11 +458,11 @@ def calculate_route(request):
         manufacturer_state = data['manufacturer_state']
         transport_mode = data['transport_mode']
         lead_time = data['lead_time']
-        
+
         # Create addresses
         supplier_address = f"{supplier_city}, {supplier_state}"
         manufacturer_address = f"{manufacturer_city}, {manufacturer_state}"
-        
+
         # Calculate route
         route_finder = RouteFinder()
         route_details = route_finder.calculate_route_details(
@@ -446,23 +471,23 @@ def calculate_route(request):
             transport_mode=transport_mode,
             lead_time_days=lead_time
         )
-        
+
         if not route_details:
             return JsonResponse({
                 'success': False,
                 'error': 'Could not calculate route details'
             }, status=400)
-        
+
         # Format response for road transport
         if route_details['mode'] == 'road':
             # Process detailed route steps
             route_steps = []
             step_types = defaultdict(int)
-            
+
             for step in route_details['steps']:
                 instruction = step['instruction'].replace('Head', 'Continue')
                 distance = step['distance']
-                
+
                 # Classify step type
                 if 'highway' in instruction.lower() or 'motorway' in instruction.lower():
                     step_type = 'highway'
@@ -476,27 +501,28 @@ def calculate_route(request):
                     step_type = 'regular'
 
                 step_types[step_type] += 1
-                
+
                 route_steps.append({
                     'instruction': instruction,
                     'distance': f"{distance}m",
                     'type': step_type
                 })
-            
+
             # Generate route summary
-            highway_percentage = (step_types['highway'] / len(route_steps)) * 100
+            highway_percentage = (
+                step_types['highway'] / len(route_steps)) * 100
             route_summary = (
                 f"Route includes {len(route_steps)} steps: "
                 f"{step_types['highway']} highway sections ({highway_percentage:.0f}%), "
                 f"{step_types['left_turn']} left turns, "
                 f"{step_types['right_turn']} right turns"
             )
-            
+
             # Generate detailed directions
             detailed_directions = "\n".join(
                 [f"{i+1}. {step['instruction']} ({step['distance']})"
                  for i, step in enumerate(route_steps)])
-            
+
             response_data = {
                 'success': True,
                 'mode': 'road',
@@ -509,7 +535,7 @@ def calculate_route(request):
                 'total_days': route_details['total_days'],
                 'delivery_days': route_details['delivery_days']
             }
-        
+
         # Format response for air transport
         else:
             response_data = {
@@ -521,9 +547,9 @@ def calculate_route(request):
                 'total_days': route_details['total_days'],
                 'delivery_days': route_details['delivery_days']
             }
-        
+
         return JsonResponse(response_data)
-        
+
     except Exception as e:
         return JsonResponse({
             'success': False,
