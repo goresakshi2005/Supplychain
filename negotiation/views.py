@@ -8,6 +8,7 @@ from .forms import CounterOfferForm, NegotiationMessageForm
 from supplier.models import Bid
 from manufacturer.models import Manufacturer
 from utils.email import send_email
+from django.urls import reverse
 
 @login_required
 def start_negotiation(request, bid_id):
@@ -174,22 +175,15 @@ def accept_negotiation(request, negotiation_id):
     quote.status = 'awarded'
     quote.save()
     
-    # Notify supplier
-    send_email(
-        subject=f"Negotiation Accepted for {quote.product}",
-        to_email=bid.supplier.user.email,
-        template_name="emails/negotiation_accepted.html",
-        context={
-            'supplier': bid.supplier,
-            'manufacturer': quote.manufacturer,
-            'quote': quote,
-            'bid': bid,
-            'negotiation': negotiation
-        }
-    )
+    # Get supplier's wallet address
+    supplier_wallet_address = bid.supplier.wallet_address
     
-    messages.success(request, 'Negotiation accepted and bid awarded!')
-    return redirect('manufacturer_dashboard')
+    if not supplier_wallet_address:
+        messages.warning(request, "Supplier hasn't set a wallet address yet. Please ask them to complete their profile.")
+        return redirect('view_negotiation', negotiation_id=negotiation.id)
+    
+    # Redirect to payment gateway with necessary parameters
+    return redirect(reverse('payment_gateway') + f'?supplier_address={supplier_wallet_address}&amount={bid.bid_amount}&supplier_name={bid.supplier.company_name}')
 
 @login_required
 def reject_negotiation(request, negotiation_id):

@@ -13,7 +13,7 @@ from django.db.models import Avg  # Add this import
 
 from django.contrib import messages
 from django.shortcuts import render, redirect
-
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from utils.carbon_calculator import CarbonEmissionsCalculator
@@ -479,3 +479,20 @@ def calculate_carbon_footprint(request):
             'success': False,
             'error': str(e)
         }, status=400)
+    
+
+@login_required
+def payment_gateway_view(request):
+    supplier_address = request.GET.get('supplier', '')
+    amount = request.GET.get('amount', '0')
+    negotiation_id = request.GET.get('negotiation_id', '')
+    supplier_name = request.GET.get('supplier_name', 'Supplier')
+    
+    context = {
+        'supplier_address': supplier_address,
+        'amount': amount,
+        'negotiation_id': negotiation_id,
+        'supplier_name': supplier_name
+    }
+    
+    return render(request, 'manufacturer/paymentGateway.html', context)

@@ -443,3 +443,39 @@ Traceback (most recent call last):
     raise self.error(
 django.template.exceptions.TemplateSyntaxError: Invalid block tag on line 74: 'else', expected 'empty' or 'endfor'. Did you forget to register or load this tag?
 2025-04-05 10:49:00,012 - INFO - C:\Users\Lenovo\Desktop\supplychain management\backendproject\Supplychain\supplier\views.py changed, reloading.
+2025-04-05 10:56:54,384 - WARNING - Not Found: /favicon.ico
+2025-04-05 10:57:24,199 - WARNING - Not Found: /favicon.ico
+2025-04-05 11:03:52,468 - WARNING - Not Found: /favicon.ico
+2025-04-05 11:03:52,480 - WARNING - Not Found: /favicon.ico
+2025-04-05 11:04:03,524 - WARNING - Not Found: /favicon.ico
+2025-04-05 11:07:53,898 - DEBUG - Converted retries value: 2 -> Retry(total=2, connect=None, read=None, redirect=None, status=None)
+2025-04-05 11:07:53,899 - DEBUG - Converted retries value: 2 -> Retry(total=2, connect=None, read=None, redirect=None, status=None)
+2025-04-05 11:07:53,899 - INFO - Geocoder initialized successfully
+2025-04-05 11:07:53,901 - DEBUG - Nominatim.geocode: https://nominatim.openstreetmap.org/search?q=Bengaluru%2C+Karnataka&format=json&limit=1
+2025-04-05 11:07:53,901 - DEBUG - Starting new HTTPS connection (1): nominatim.openstreetmap.org:443
+2025-04-05 11:07:54,705 - DEBUG - https://nominatim.openstreetmap.org:443 "GET /search?q=Bengaluru%2C+Karnataka&format=json&limit=1 HTTP/1.1" 200 479
+2025-04-05 11:07:54,707 - DEBUG - RateLimiter sleep(0.1929503000000068)
+2025-04-05 11:07:54,900 - DEBUG - Nominatim.geocode: https://nominatim.openstreetmap.org/search?q=Mumbai%2C+Maharashtra&format=json&limit=1
+2025-04-05 11:07:55,807 - DEBUG - https://nominatim.openstreetmap.org:443 "GET /search?q=Mumbai%2C+Maharashtra&format=json&limit=1 HTTP/1.1" 200 441
+2025-04-05 11:07:55,808 - DEBUG - Starting new HTTPS connection (1): api.openrouteservice.org:443
+2025-04-05 11:07:56,813 - DEBUG - https://api.openrouteservice.org:443 "POST /v2/directions/driving-car HTTP/1.1" 200 None
+2025-04-05 11:08:59,098 - DEBUG - Converted retries value: 2 -> Retry(total=2, connect=None, read=None, redirect=None, status=None)
+2025-04-05 11:08:59,098 - DEBUG - Converted retries value: 2 -> Retry(total=2, connect=None, read=None, redirect=None, status=None)
+2025-04-05 11:08:59,099 - INFO - Geocoder initialized successfully
+2025-04-05 11:08:59,099 - DEBUG - Nominatim.geocode: https://nominatim.openstreetmap.org/search?q=Bengaluru%2C+Karnataka&format=json&limit=1
+2025-04-05 11:08:59,099 - DEBUG - Starting new HTTPS connection (1): nominatim.openstreetmap.org:443
+2025-04-05 11:08:59,965 - DEBUG - https://nominatim.openstreetmap.org:443 "GET /search?q=Bengaluru%2C+Karnataka&format=json&limit=1 HTTP/1.1" 200 479
+2025-04-05 11:08:59,966 - DEBUG - RateLimiter sleep(0.13315130000000863)
+2025-04-05 11:09:00,100 - DEBUG - Nominatim.geocode: https://nominatim.openstreetmap.org/search?q=Mumbai%2C+Maharashtra&format=json&limit=1
+2025-04-05 11:09:01,068 - DEBUG - https://nominatim.openstreetmap.org:443 "GET /search?q=Mumbai%2C+Maharashtra&format=json&limit=1 HTTP/1.1" 200 441
+2025-04-05 12:08:38,188 - INFO - C:\Users\Lenovo\Desktop\supplychain management\backendproject\Supplychain\negotiation\views.py changed, reloading.
+2025-04-05 12:09:33,280 - INFO - C:\Users\Lenovo\Desktop\supplychain management\backendproject\Supplychain\negotiation\urls.py changed, reloading.
+2025-04-05 12:09:45,411 - INFO - C:\Users\Lenovo\Desktop\supplychain management\backendproject\Supplychain\negotiation\urls.py changed, reloading.
+2025-04-05 12:10:09,903 - INFO - C:\Users\Lenovo\Desktop\supplychain management\backendproject\Supplychain\negotiation\views.py changed, reloading.
+2025-04-05 12:12:27,209 - INFO - C:\Users\Lenovo\Desktop\supplychain management\backendproject\Supplychain\manufacturer\views.py changed, reloading.
+2025-04-05 12:25:00,062 - INFO - C:\Users\Lenovo\Desktop\supplychain management\backendproject\Supplychain\negotiation\views.py changed, reloading.
+2025-04-05 12:26:18,935 - INFO - C:\Users\Lenovo\Desktop\supplychain management\backendproject\Supplychain\negotiation\views.py changed, reloading.
+2025-04-05 12:27:17,632 - INFO - C:\Users\Lenovo\Desktop\supplychain management\backendproject\Supplychain\negotiation\views.py changed, reloading.
+2025-04-05 12:27:58,016 - INFO - C:\Users\Lenovo\Desktop\supplychain management\backendproject\Supplychain\negotiation\views.py changed, reloading.
+2025-04-05 12:28:23,750 - INFO - C:\Users\Lenovo\Desktop\supplychain management\backendproject\Supplychain\manufacturer\views.py changed, reloading.
+2025-04-05 12:28:34,563 - INFO - C:\Users\Lenovo\Desktop\supplychain management\backendproject\Supplychain\manufacturer\views.py changed, reloading.
